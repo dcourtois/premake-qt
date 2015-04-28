@@ -155,15 +155,6 @@ premake.api.register {
 }
 
 --
--- If true, needed dlls will be copied to the output folder (Windows only)
---
-premake.api.register {
-	name = "qtdeploydlls",
-	scope = "config",
-	kind = "boolean"
-}
-
---
 -- Private use only : used by the addon to know if qt has already been enabled or not
 --
 premake.api.register {
@@ -267,17 +258,6 @@ function premake.extensions.qt.customBakeConfig(base, prj, buildcfg, platform)
 	table.insert(config.includedirs, qtpath .. "/include")
 	table.insert(config.libdirs, qtpath .. "/lib")
 
-	-- add the deploy command if needed
-	if config.qtdeploydlls then
-		-- ensure the post build commands is present
-		if config.postbuildcommands == nil then
-			config.postbuildcommands = {}
-		end
-	end
-
-	-- get the output dir (in case we need to deploy)
-	local objdir = qt.getGeneratedDir(config)
-
 	-- add the modules
 	for _, modulename in ipairs(config.qtmodules) do
 
@@ -288,11 +268,6 @@ function premake.extensions.qt.customBakeConfig(base, prj, buildcfg, platform)
 			local suffix	= config.qtsuffix or ""
 			local libname	= prefix .. module.name .. suffix .. ".lib"
 			local dllname	= prefix .. module.name .. suffix .. ".dll"
-
-			-- add the deploy command if needed
-			if config.qtdeploydlls then
-				table.insert(config.postbuildcommands, "{copy} " .. qtpath .. "/bin/" .. dllname .. " " .. objdir)
-			end
 
 			-- configure the module
 			table.insert(config.includedirs, qtpath .. "/include/" .. module.include)

@@ -51,7 +51,7 @@ to the current configuration block.
 #####qtpath "path"
 
 Setup the path where Qt include and lib folders are found. If this is not used,
-the addon will try to get the path from the `QTDIR` environment variable.
+the addon will try to get the path from the `QTDIR` or `QT_DIR` environment variable.
 
 #####qtprefix "prefix"
 
@@ -104,10 +104,6 @@ in double quotes, e.g. `qtuicargs { "foo", "bar" }` will appear as `"foo" "bar"`
 An optional list of arguments that will be sent to the Qt rcc tool. Each argument will be encased
 in double quotes, e.g. `qtrccargs { "foo", "bar" }` will appear as `"foo" "bar"` in the command line.
 
-#####qtdeploydlls arg
-
-This is an optional boolean command which only has an impact on Windows. If true, the needed dlls
-will be automatically deployed to the output folder as a post-build step.
 
 Examples
 ========
