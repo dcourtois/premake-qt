@@ -1,4 +1,11 @@
 
+
+--
+-- always include _preload so that the module works even when not embedded.
+--
+include ( "_preload.lua" )
+
+
 --
 -- define the qt extension
 --
