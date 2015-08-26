@@ -7,6 +7,11 @@ include ( "_preload.lua" )
 
 
 --
+-- include list of modules
+--
+include ( "qtmodules.lua" )
+
+--
 -- define the qt extension
 --
 premake.extensions.qt = {
