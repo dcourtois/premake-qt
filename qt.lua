@@ -141,20 +141,24 @@ end
 --		The original bakeConfig method.
 -- @param prj
 --		The current project.
+-- @param wks
+--		The current workspace.
 -- @param buildcfg
 --		The current configuration.
 -- @param platform
 --		The current platform.
+-- @param extraFilters
+--		Optional additional filters.
 -- @return
 --		The configuration object.
 --
-function premake.extensions.qt.customBakeConfig(base, prj, buildcfg, platform)
+function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platform, extraFilters)
 
 	local qt = premake.extensions.qt
 	local modules = qt.modules
 
 	-- bake
-	local config = base(prj, buildcfg, platform)
+	local config = base(wks, prj, buildcfg, platform, extraFilters)
 
 	-- do nothing if qt is not enabled for this config
 	if config.qtenabled ~= true then
