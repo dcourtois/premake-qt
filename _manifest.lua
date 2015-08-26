@@ -1,5 +1,6 @@
 
 return {
 	"_preload.lua",
-	"qt.lua"
+	"qt.lua",
+	"qtmodules.lua"
 }
