@@ -69,17 +69,22 @@ own version of Qt, you might want to suffix the x64 and x86 versions differently
 
 Specify which module you want to use. The available modules are (for the moment)
 
-* core
-* gui
-* network
-* opengl
-* qml
-* quick
-* sql
-* svg
-* testlib
-* widgets
-* xml
+* [core](http://doc.qt.io/qt-5/qtcore-index.html)
+* [gui](http://doc.qt.io/qt-5/qtgui-index.html)
+* [multimedia](http://doc.qt.io/qt-5/qtmultimedia-index.html)
+* [network](http://doc.qt.io/qt-5/qtnetwork-index.html)
+* [opengl](http://doc.qt.io/qt-5/qtopengl-index.html)
+* [positioning](http://doc.qt.io/qt-5/qtpositioning-index.html)
+* [printsupport](http://doc.qt.io/qt-5/qtprintsupport-index.html)
+* [qml](http://doc.qt.io/qt-5/qtqml-index.html)
+* [quick](http://doc.qt.io/qt-5/qtquick-index.html)
+* [sensors](http://doc.qt.io/qt-5/qtsensors-index.html)
+* [sql](http://doc.qt.io/qt-5/qtsql-index.html)
+* [svg](http://doc.qt.io/qt-5/qtsvg-index.html)
+* [testlib](http://doc.qt.io/qt-5/qttest-index.html)
+* [websockets](http://doc.qt.io/qt-5/qtwebsockets-index.html)
+* [widgets](http://doc.qt.io/qt-5/qtwidgets-index.html)
+* [xml](http://doc.qt.io/qt-5/qtxml-index.html)
 
 Using a module will add its include folder, and link the correct librar(y/ies)
 The list of module can be customized. See the Examples section for more information.

@@ -50,15 +50,15 @@ premake.extensions.qt.modules = {
 		include = "QtQuick",
 		defines = { "QT_QUICK_LIB" }
 	},
-	sql = {
-		name = "Sql",
-		include = "QtSql",
-		defines = { "QT_SQL_LIB" }
-	},
 	sensors = {
 		name = "Sensors",
 		include = "QtSensors",
 		defines = { "QT_SENSORS_LIB" }
+	},
+	sql = {
+		name = "Sql",
+		include = "QtSql",
+		defines = { "QT_SQL_LIB" }
 	},
 	svg = {
 		name = "Svg",
@@ -70,15 +70,15 @@ premake.extensions.qt.modules = {
 		include = "QtTest",
 		defines = { "QT_TESTLIB_LIB" }
 	},
-	widgets = {
-		name = "Widgets",
-		include = "QtWidgets",
-		defines = { "QT_WIDGETS_LIB" }
-	},
 	websockets = {
 		name = "WebSockets",
 		include = "QtWebSockets",
 		defines = { "QT_WEBSOCKETS_LIB" }
+	},
+	widgets = {
+		name = "Widgets",
+		include = "QtWidgets",
+		defines = { "QT_WIDGETS_LIB" }
 	},
 	xml = {
 		name = "Xml",
