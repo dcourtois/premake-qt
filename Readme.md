@@ -22,12 +22,12 @@ reproductible scenario that you can attach to the issue :)
 How to use
 ==========
 
-First, put the `qt.lua` file somewhere accessible. Then, in your project premake
-file, insert this at the beginning :
+Clone this repository some place where Premake will be able to locate. Then
+in your project's Premake script, include the main file like this :
 
 ```lua
-require("qt.lua")
-	
+require( "premake-qt/qt.lua" )
+
 -- this line is optional, but it avoids writting premake.extensions.qt to
 -- call the plugin's methods.
 local qt = premake.extensions.qt
