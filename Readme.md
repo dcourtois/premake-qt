@@ -22,7 +22,7 @@ reproductible scenario that you can attach to the issue :)
 How to use
 ==========
 
-Clone this repository some place where Premake will be able to locate. Then
+Clone this repository some place where Premake will be able to find it. Then
 in your project's Premake script, include the main file like this :
 
 ```lua
@@ -36,13 +36,19 @@ local qt = premake.extensions.qt
 Then in the projects that you want to enable to Qt, just add this :
 
 ```lua
--- be carefull, this one enables Qt only for the current configuration
+-- be carefull, this function enables Qt only for the current configuration.
+-- So if you want to enable it on all configuration, be sure that no filter
+-- is active when calling this (or reset the filter using `filter {}`
 qt.enable()
 ```
 
 
 API
 ===
+
+The following API commands will allow you to customize Qt: what version are
+you building against, what custom options do you want to send to the Qt build
+tools, etc. They only have an effect if the project has been enabled to Qt.
 
 Most of the API commands of this addon are scoped to the current configuration,
 so unless specified otherwise, assume that the documented command only applies
@@ -123,7 +129,7 @@ Here is a small example of how to use the addon :
 --
 -- Include the Qt functionalities and create a shortcut
 --
-include "qt.lua"
+require( "premake-qt/qt.lua" )
 local qt = premake.extensions.qt
 
 -- main solution
@@ -195,7 +201,7 @@ You can add modules to the addon like this :
 --
 -- Include the Qt functionalities and create a shortcut
 --
-include "qt.lua"
+require( "premake-qt/qt.lua" )
 local qt = premake.extensions.qt
 
 --
