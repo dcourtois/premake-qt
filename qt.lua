@@ -5,78 +5,10 @@
 --
 include ( "_preload.lua" )
 
-
---
--- include list of modules
---
-include ( "qtmodules.lua" )
-
 --
 -- define the qt extension
 --
 premake.extensions.qt = {
-	--
-	-- The available modules' definitions.
-	-- Use the keys with qtmodule. For instance `qtmodule { "core", "gui" }` to use QtCore and QtGui
-	--
-	modules = {
-		core = {
-			name = "Core",
-			include = "QtCore",
-			defines = { "QT_CORE_LIB" }
-		},
-		gui = {
-			name = "Gui",
-			include = "QtGui",
-			defines = { "QT_GUI_LIB" }
-		},
-		network = {
-			name = "Network",
-			include = "QtNetwork",
-			defines = { "QT_NETWORK_LIB" }
-		},
-		opengl = {
-			name = "OpenGL",
-			include = "QtOpenGL",
-			links = { "OpenGL32" },
-			defines = { "QT_OPENGL_LIB" }
-		},
-		qml = {
-			name = "Qml",
-			include = "QtQml",
-			defines = { "QT_QML_LIB" }
-		},
-		quick = {
-			name = "Quick",
-			include = "QtQuick",
-			defines = { "QT_QUICK_LIB" }
-		},
-		sql = {
-			name = "Sql",
-			include = "QtSql",
-			defines = { "QT_SQL_LIB" }
-		},
-		svg = {
-			name = "Svg",
-			include = "QtSvg",
-			defines = { "QT_SVG_LIB" }
-		},
-		testlib = {
-			name = "Test",
-			include = "QtTest",
-			defines = { "QT_TESTLIB_LIB" }
-		},
-		widgets = {
-			name = "Widgets",
-			include = "QtWidgets",
-			defines = { "QT_WIDGETS_LIB" }
-		},
-		xml = {
-			name = "Xml",
-			include = "QtXml",
-			defines = { "QT_XML_LIB" }
-		}
-	},
 	
 	--
 	-- these are private, do not touch
@@ -84,6 +16,11 @@ premake.extensions.qt = {
 	enabled = false,
 	defaultPath = os.getenv("QTDIR") or os.getenv("QT_DIR")
 }
+
+--
+-- include list of modules
+--
+include ( "qtmodules.lua" )
 
 --
 -- Enable Qt for a project. Be carefull, although this is a method, it will enable Qt
