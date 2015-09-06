@@ -3,7 +3,9 @@
 --
 -- always include _preload so that the module works even when not embedded.
 --
-include ( "_preload.lua" )
+if premake.extensions == nil or premake.extensions.qt == nil then
+	include ( "_preload.lua" )
+end
 
 --
 -- define the qt extension

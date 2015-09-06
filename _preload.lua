@@ -1,5 +1,11 @@
 
 --
+-- To avoid qt.lua re-including _preload
+--
+premake.extensions.qt = true
+
+
+--
 -- Set the path where Qt is installed
 --
 premake.api.register {
@@ -87,4 +93,4 @@ premake.api.register {
 --
 -- Always load
 --
-return true
+return function () return true end
