@@ -83,10 +83,10 @@ end
 --
 -- @param base
 --		The original bakeConfig method.
--- @param prj
---		The current project.
 -- @param wks
 --		The current workspace.
+-- @param prj
+--		The current project.
 -- @param buildcfg
 --		The current configuration.
 -- @param platform
@@ -132,7 +132,6 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 			local prefix	= config.qtprefix or ""
 			local suffix	= config.qtsuffix or ""
 			local libname	= prefix .. module.name .. suffix .. ".lib"
-			local dllname	= prefix .. module.name .. suffix .. ".dll"
 
 			-- configure the module
 			table.insert(config.includedirs, qtpath .. "/include/" .. module.include)
@@ -179,21 +178,26 @@ function premake.extensions.qt.customBakeFiles(base, prj)
 
 			local mocs	    = {}
 			local qrc	    = {}
+			local ui		= false
 			local objdir    = qt.getGeneratedDir(cfg)
-
-			-- add the objdir as an include path
-			table.insert(cfg.includedirs, objdir)
 
 			-- check each file in this configuration
 			table.foreachi(cfg.files, function(filename)
 
-				if qt.isQRC(filename) then
+				if qt.isUI(filename) then
+					ui = true
+				elseif qt.isQRC(filename) then
 					table.insert(qrc, filename)
 				elseif qt.needMOC(filename) then
 					table.insert(mocs, filename)
 				end
 
 			end)
+
+			-- include path for uic generated headers
+			if ui == true then
+				table.insert(cfg.includedirs, objdir)
+			end
 
 			-- the moc files
 			table.foreachi(mocs, function(filename)
@@ -394,7 +398,7 @@ function premake.extensions.qt.getQRCDependencies(fcfg)
 		end
 
 		-- if we have one, compute the path of the file, and add it to the dependencies
-		-- note : the QRC file are relative to the folder containing the qrc file.
+		-- note : the QRC files are relative to the folder containing the qrc file.
 		if match ~= nil then
 			table.insert(dependencies, path.getrelative(projectdirectory, qrcdirectory .. "/" .. match))
 		end
