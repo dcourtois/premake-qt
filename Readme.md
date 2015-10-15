@@ -59,6 +59,31 @@ to the current configuration block.
 Setup the path where Qt include and lib folders are found. If this is not used,
 the addon will try to get the path from the `QTDIR` or `QT_DIR` environment variable.
 
+When setting this, the addon will automatically try to locate the binaries, include
+and libraries in the `include`,  `lib` and  `bin` subfolders of the specified path.
+
+If your includes, libraries and binaries are in separate folders (for instance on
+Unix they might be in /usr/include, /usr/lib or whatever) you can use the
+`qtincludepath`, `qtlibpath` and `qtbinpath` API commands instead.
+
+#####qtincludepath "path"
+
+Set the path for the Qt headers. If this is not used, the addon will set the
+includepath to the `include` child folder of the one set by `qtpath`, or one of the
+environment variable.
+
+#####qtlibpath "path"
+
+Set the path for the Qt libraries. If this is not used, the addon will set the
+includepath to the `lib` child folder of the one set by `qtpath`, or one of the
+environment variable.
+
+#####qtbinpath "path"
+
+Set the path for the Qt binaries. If this is not used, the addon will set the
+includepath to the `bin` child folder of the one set by `qtpath`, or one of the
+environment variable.
+
 #####qtprefix "prefix"
 
 Specify a prefix used by the libs. For instance, when using the default Qt5
