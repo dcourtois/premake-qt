@@ -15,6 +15,36 @@ premake.api.register {
 }
 
 --
+-- Set the binary path. By default, its `qtpath .. "/bin"`. Use
+-- this command to override it.
+--
+premake.api.register {
+	name = "qtbinpath",
+	scope = "config",
+	kind = "path"
+}
+
+--
+-- Set the include path. By default, its `qtpath .. "/include"`. Use
+-- this command to override it.
+--
+premake.api.register {
+	name = "qtincludepath",
+	scope = "config",
+	kind = "path"
+}
+
+--
+-- Set the library path. By default, its `qtpath .. "/lib"`. Use
+-- this command to override it.
+--
+premake.api.register {
+	name = "qtlibpath",
+	scope = "config",
+	kind = "path"
+}
+
+--
 -- Set the prefix of the libraries ("Qt4" or "Qt5" usually)
 --
 premake.api.register {

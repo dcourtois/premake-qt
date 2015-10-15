@@ -46,6 +46,19 @@ function premake.extensions.qt.enable()
 end
 
 --
+-- Get the include, lib and bin paths
+--
+function premake.extensions.qt.getPaths(cfg)
+	-- get the main path
+	local qtpath = cfg.qtpath or premake.extensions.qt.defaultpath
+
+	-- return the paths
+	return cfg.qtincludepath or qtpath .. "/include",
+		   cfg.qtlibpath or qtpath .. "/lib",
+		   cfg.qtbinpath or qtpath .. "/bin"
+end
+
+--
 -- A small function which will get the generated directory for a given config.
 -- If objdir was specified, it will be used. Else, it's the project's location +
 -- obj + configuration + platform
@@ -109,19 +122,26 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 		return config
 	end
 
-	-- get the installation path
-	local qtpath = config.qtpath or qt.defaultPath
-	if qtpath == nil then
-		error("Qt path is not set. Either use 'qtpath' in your project configuration or set the QTDIR or QT_DIR environment variable.")
+	-- get the needed pathes
+	local qtinclude, qtlib, qtbin = qt.getPaths(config)
+	if qtinclude == nil or qtlib == nil or qtbin == nil then
+		error(
+			"Some Qt paths were not found. Ensure that you set the Qt path using\n" ..
+			"either 'qtpath' in your project configuration or using the QTDIR or\n" ..
+			"QT_DIR environment variable. You can also use the 'qtincludepath',\n" ..
+			"'qtlibpath' and 'qtbinpath' individually."
+		)
 	end
 
-	-- bake qtpath in the config (in case it was retrieved from the environment variable, it
-	-- will not be in the config objects, and we need it in the other baking methods)
-	config.qtpath = qtpath
+	-- bake paths in the config (in case they were retrieved from the environment variable, thy
+	-- will not be in the config objects, and we need them in the other baking methods)
+	config.qtincludepath	= qtinclude
+	config.qtlibpath		= qtlib
+	config.qtbinpath		= qtbin
 
 	-- add the includes and libraries directories
-	table.insert(config.includedirs, qtpath .. "/include")
-	table.insert(config.libdirs, qtpath .. "/lib")
+	table.insert(config.includedirs, qtinclude)
+	table.insert(config.libdirs, qtlib)
 
 	-- add the modules
 	for _, modulename in ipairs(config.qtmodules) do
@@ -134,7 +154,7 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 			local libname	= prefix .. module.name .. suffix
 
 			-- configure the module
-			table.insert(config.includedirs, qtpath .. "/include/" .. module.include)
+			table.insert(config.includedirs, qtinclude .. "/" .. module.include)
 			table.insert(config.links, libname)
 			if module.defines ~= nil then
 				qt.mergeDefines(config, module.defines)
@@ -304,7 +324,7 @@ function premake.extensions.qt.addUICustomBuildRule(fcfg, cfg)
 	output = path.getrelative(fcfg.project.location, output)
 
 	-- build the command
-	local command = fcfg.config.qtpath .. "/bin/uic -o \"" .. output .. "\" \"" .. fcfg.relpath.. "\""
+	local command = fcfg.config.qtbinpath .. "/uic -o \"" .. output .. "\" \"" .. fcfg.relpath.. "\""
 
 	-- if we have custom commands, add them
 	if fcfg.config.qtrccargs then
@@ -349,7 +369,7 @@ function premake.extensions.qt.addQRCCustomBuildRule(fcfg, cfg)
 	output = path.getrelative(fcfg.project.location, output)
 
 	-- build the command
-	local command = fcfg.config.qtpath .. "/bin/rcc -name \"" .. fcfg.basename .. "\" -no-compress \"" .. fcfg.relpath .. "\" -o \"" .. output .. "\""
+	local command = fcfg.config.qtbinpath .. "/rcc -name \"" .. fcfg.basename .. "\" -no-compress \"" .. fcfg.relpath .. "\" -o \"" .. output .. "\""
 
 	-- if we have custom commands, add them
 	if fcfg.config.qtrccargs then
@@ -464,7 +484,7 @@ function premake.extensions.qt.addMOCCustomBuildRule(fcfg, cfg)
 	output = path.getrelative(projectloc, output)
 
 	-- create the moc command
-	local command = fcfg.config.qtpath .. "/bin/moc \"" .. fcfg.relpath .. "\" -o \"" .. output .. "\""
+	local command = fcfg.config.qtbinpath .. "/moc \"" .. fcfg.relpath .. "\" -o \"" .. output .. "\""
 
 	-- if we have a precompiled header, prepend it
 	if fcfg.config.pchheader then
