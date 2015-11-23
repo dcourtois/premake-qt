@@ -7,8 +7,8 @@ stuff (such as invoking the `moc` command, the `uic` one, etc.)
 
 **Beware though that those custom rules are only created when the solutions /
 projects are built using Premake** ! You need to re-run Premake when adding
-new Qt classes, UIs, etc. or when you add **Q_OBJECT** to one of your existing
-classes.
+new Qt classes, UIs, etc. or when you add **Q_OBJECT** or **Q_GADGET** to one
+of your existing classes.
 
 It should support any action which has support for custom build commands, but
 I only tested this addon with the Visual Studio actions, so I'm not sure of its

@@ -450,9 +450,9 @@ function premake.extensions.qt.needMOC(filename)
 		-- open the file
 		local file = io.open(filename)
 
-		-- scan it to find 'Q_OBJECT'
+		-- scan it to find 'Q_OBJECT' or 'Q_GADGET'
 		for line in file:lines() do
-			if line:find("Q_OBJECT") then
+			if line:find("Q_OBJECT") or line:find("Q_GADGET") then
 				needmoc = true
 				break
 			end
