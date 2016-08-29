@@ -16,7 +16,7 @@ premake.extensions.qt = {
 	-- these are private, do not touch
 	--
 	enabled = false,
-	defaultPath = os.getenv("QTDIR") or os.getenv("QT_DIR")
+	defaultpath = os.getenv("QTDIR") or os.getenv("QT_DIR")
 }
 
 --
