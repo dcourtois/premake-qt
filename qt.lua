@@ -452,7 +452,7 @@ function premake.extensions.qt.needMOC(filename)
 
 		-- scan it to find 'Q_OBJECT' or 'Q_GADGET'
 		for line in file:lines() do
-			if line:find("Q_OBJECT") or line:find("Q_GADGET") then
+			if line:find("^%s*Q_OBJECT%f[^%w_]") or line:find("^%s*Q_GADGET%f[^%w_]") then
 				needmoc = true
 				break
 			end
