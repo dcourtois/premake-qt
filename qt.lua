@@ -59,6 +59,49 @@ function premake.extensions.qt.getPaths(cfg)
 end
 
 --
+-- Get the Qt version number
+--
+-- @param cfg
+--		The input configuration
+-- @param includepath
+--		The Qt include path
+-- @return
+--		The Qt version string
+--
+function premake.extensions.qt.getVersion(cfg, includepath)
+	-- get the version number
+	local qtversion = cfg.qtversion
+
+	-- if we haven't cached the version and/or the project didn't specify one...
+	-- try and work it out
+	if qtversion == nil then
+		-- pre-5.6 stored the version string in qglobal.h ; post-5.6 in qconfig.h
+		local qtheaderpaths = { includepath .. "/QtCore/qconfig.h", includepath .. "/QtCore/qglobal.h" }
+
+		for _, headerpath in ipairs(qtheaderpaths) do
+			local file = io.open(headerpath)
+
+			-- scan to find 'QT_VERSION_STR' and extract the version number
+			for line in file:lines() do
+				if line:find("QT_VERSION_STR") then
+					qtversion = line:sub(line:find("\"")+1, line:find("\"[^\"]*$")-1)
+					break
+				end
+			end
+
+			io.close(file)
+
+			-- if we found the version, break out of the loop
+			if qtversion ~=nil then
+				break
+			end
+		end
+	end
+
+	return qtversion
+end
+
+--
 -- A small function which will get the generated directory for a given config.
 -- If objdir was specified, it will be used. Else, it's the project's location +
 -- obj + configuration + platform
@@ -145,6 +188,30 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 
 	-- add the modules
 	for _, modulename in ipairs(config.qtmodules) do
+
+		-- private modules are indicated by modulename-private
+		-- this will implicitly add the associated public module and the private module header path
+		if modulename:endswith("-private") then
+			-- we need the version for the private header path
+			config.qtversion = qt.getVersion(config, qtinclude)
+			if config.qtversion == nil then
+				error(
+					"Cannot add module '" .. modulename .. "' - Unable to determine Qt Version.\n" ..
+					"You can explicitly set the version number using 'qtversion' in your project\n" ..
+					"configuration."
+				)
+			end
+
+			-- truncate the "-private"
+			modulename = modulename:sub(1, -9)
+
+			local module = modules[modulename]
+			if module ~= nil then
+				local privatepath = qtinclude .. "/" .. module.include .. "/" .. config.qtversion
+				table.insert(config.includedirs, privatepath)
+				table.insert(config.includedirs, privatepath .. "/" .. module.include)
+			end
+		end
 
 		if modules[modulename] ~= nil then
 

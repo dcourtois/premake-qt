@@ -111,6 +111,18 @@ premake.api.register {
 }
 
 --
+-- Specify the version of Qt.
+-- This is used to determine the private header path when adding private modules.
+-- If unspecified, the addon will scan `qtincludepath .. "/QtCore/qconfig.h"` and `qglobal.h`
+-- for the version string.
+--
+premake.api.register {
+	name = "qtversion",
+	scope = "config",
+	kind = "string"
+}
+
+--
 -- Private use only : used by the addon to know if qt has already been enabled or not
 --
 premake.api.register {
