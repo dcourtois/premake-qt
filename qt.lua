@@ -186,6 +186,11 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 	table.insert(config.includedirs, qtinclude)
 	table.insert(config.libdirs, qtlib)
 
+	if _OS == "linux" then
+		table.insert(config.linkoptions, "-Wl,-rpath," .. qtlib)
+		table.insert(config.linkoptions, "-Wl,-O1")
+	end
+  
 	-- add the modules
 	for _, modulename in ipairs(config.qtmodules) do
 
