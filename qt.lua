@@ -53,9 +53,9 @@ function premake.extensions.qt.getPaths(cfg)
 	local qtpath = cfg.qtpath or premake.extensions.qt.defaultpath
 
 	-- return the paths
-	return cfg.qtincludepath or qtpath .. "/include",
-		   cfg.qtlibpath or qtpath .. "/lib",
-		   cfg.qtbinpath or qtpath .. "/bin"
+	return cfg.qtincludepath or (qtpath and qtpath .. "/include"),
+		   cfg.qtlibpath or (qtpath and qtpath .. "/lib"),
+		   cfg.qtbinpath or (qtpath and qtpath .. "/bin")
 end
 
 --
