@@ -154,7 +154,7 @@ Here is a small example of how to use the addon :
 --
 -- Include the Qt functionalities and create a shortcut
 --
-require( "premake-qt/qt" )
+require( "premake-qt/qt.lua" )
 local qt = premake.extensions.qt
 
 -- main solution
@@ -226,7 +226,7 @@ You can add modules to the addon like this :
 --
 -- Include the Qt functionalities and create a shortcut
 --
-require( "premake-qt/qt" )
+require( "premake-qt/qt.lua" )
 local qt = premake.extensions.qt
 
 --
