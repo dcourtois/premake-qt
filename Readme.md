@@ -26,7 +26,7 @@ Clone this repository some place where Premake will be able to find it. Then
 in your project's Premake script, include the main file like this :
 
 ```lua
-require( "premake-qt/qt.lua" )
+require( "premake-qt/qt" )
 
 -- this line is optional, but it avoids writting premake.extensions.qt to
 -- call the plugin's methods.
@@ -154,7 +154,7 @@ Here is a small example of how to use the addon :
 --
 -- Include the Qt functionalities and create a shortcut
 --
-require( "premake-qt/qt.lua" )
+require( "premake-qt/qt" )
 local qt = premake.extensions.qt
 
 -- main solution
@@ -226,7 +226,7 @@ You can add modules to the addon like this :
 --
 -- Include the Qt functionalities and create a shortcut
 --
-require( "premake-qt/qt.lua" )
+require( "premake-qt/qt" )
 local qt = premake.extensions.qt
 
 --

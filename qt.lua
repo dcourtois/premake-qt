@@ -16,7 +16,7 @@ premake.extensions.qt = {
 	-- these are private, do not touch
 	--
 	enabled = false,
-	defaultPath = os.getenv("QTDIR") or os.getenv("QT_DIR")
+	defaultpath = os.getenv("QTDIR") or os.getenv("QT_DIR")
 }
 
 --
@@ -53,9 +53,52 @@ function premake.extensions.qt.getPaths(cfg)
 	local qtpath = cfg.qtpath or premake.extensions.qt.defaultpath
 
 	-- return the paths
-	return cfg.qtincludepath or qtpath .. "/include",
-		   cfg.qtlibpath or qtpath .. "/lib",
-		   cfg.qtbinpath or qtpath .. "/bin"
+	return cfg.qtincludepath or (qtpath and qtpath .. "/include"),
+		   cfg.qtlibpath or (qtpath and qtpath .. "/lib"),
+		   cfg.qtbinpath or (qtpath and qtpath .. "/bin")
+end
+
+--
+-- Get the Qt version number
+--
+-- @param cfg
+--		The input configuration
+-- @param includepath
+--		The Qt include path
+-- @return
+--		The Qt version string
+--
+function premake.extensions.qt.getVersion(cfg, includepath)
+	-- get the version number
+	local qtversion = cfg.qtversion
+
+	-- if we haven't cached the version and/or the project didn't specify one...
+	-- try and work it out
+	if qtversion == nil then
+		-- pre-5.6 stored the version string in qglobal.h ; post-5.6 in qconfig.h
+		local qtheaderpaths = { includepath .. "/QtCore/qconfig.h", includepath .. "/QtCore/qglobal.h" }
+
+		for _, headerpath in ipairs(qtheaderpaths) do
+			local file = io.open(headerpath)
+
+			-- scan to find 'QT_VERSION_STR' and extract the version number
+			for line in file:lines() do
+				if line:find("QT_VERSION_STR") then
+					qtversion = line:sub(line:find("\"")+1, line:find("\"[^\"]*$")-1)
+					break
+				end
+			end
+
+			io.close(file)
+
+			-- if we found the version, break out of the loop
+			if qtversion ~=nil then
+				break
+			end
+		end
+	end
+
+	return qtversion
 end
 
 --
@@ -143,8 +186,37 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 	table.insert(config.includedirs, qtinclude)
 	table.insert(config.libdirs, qtlib)
 
+	if _OS == "linux" then
+		table.insert(config.linkoptions, "-Wl,-rpath," .. qtlib)
+		table.insert(config.linkoptions, "-Wl,-O1")
+	end
+  
 	-- add the modules
 	for _, modulename in ipairs(config.qtmodules) do
+
+		-- private modules are indicated by modulename-private
+		-- this will implicitly add the associated public module and the private module header path
+		if modulename:endswith("-private") then
+			-- we need the version for the private header path
+			config.qtversion = qt.getVersion(config, qtinclude)
+			if config.qtversion == nil then
+				error(
+					"Cannot add module '" .. modulename .. "' - Unable to determine Qt Version.\n" ..
+					"You can explicitly set the version number using 'qtversion' in your project\n" ..
+					"configuration."
+				)
+			end
+
+			-- truncate the "-private"
+			modulename = modulename:sub(1, -9)
+
+			local module = modules[modulename]
+			if module ~= nil then
+				local privatepath = qtinclude .. "/" .. module.include .. "/" .. config.qtversion
+				table.insert(config.includedirs, privatepath)
+				table.insert(config.includedirs, privatepath .. "/" .. module.include)
+			end
+		end
 
 		if modules[modulename] ~= nil then
 
@@ -450,7 +522,7 @@ function premake.extensions.qt.needMOC(filename)
 
 		-- scan it to find 'Q_OBJECT' or 'Q_GADGET'
 		for line in file:lines() do
-			if line:find("Q_OBJECT") or line:find("Q_GADGET") then
+			if line:find("^%s*Q_OBJECT%f[^%w_]") or line:find("^%s*Q_GADGET%f[^%w_]") then
 				needmoc = true
 				break
 			end
