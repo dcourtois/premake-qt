@@ -11,7 +11,7 @@ end
 -- define the qt extension
 --
 premake.extensions.qt = {
-	
+
 	--
 	-- these are private, do not touch
 	--
@@ -31,7 +31,7 @@ include ( "qtmodules.lua" )
 function premake.extensions.qt.enable()
 
  	local qt = premake.extensions.qt
- 	
+
  	-- enable Qt for the current config
  	qtenabled ( true )
 
@@ -321,10 +321,9 @@ function premake.extensions.qt.addUICustomBuildRule(fcfg, cfg)
 
 	-- get the output file
 	local output = qt.getGeneratedDir(cfg) .. "/ui_" .. fcfg.basename .. ".h"
-	output = path.getrelative(fcfg.project.location, output)
 
 	-- build the command
-	local command = fcfg.config.qtbinpath .. "/uic -o \"" .. output .. "\" \"" .. fcfg.relpath.. "\""
+	local command = fcfg.config.qtbinpath .. "/uic -o \"" .. path.getrelative(fcfg.project.location, output) .. "\" \"" .. fcfg.relpath.. "\""
 
 	-- if we have custom commands, add them
 	if fcfg.config.qtrccargs then
@@ -366,10 +365,9 @@ function premake.extensions.qt.addQRCCustomBuildRule(fcfg, cfg)
 
 	-- get the input and output files
 	local output = qt.getGeneratedDir(cfg) .. "/qrc_" .. fcfg.basename .. ".cpp"
-	output = path.getrelative(fcfg.project.location, output)
 
 	-- build the command
-	local command = fcfg.config.qtbinpath .. "/rcc -name \"" .. fcfg.basename .. "\" -no-compress \"" .. fcfg.relpath .. "\" -o \"" .. output .. "\""
+	local command = fcfg.config.qtbinpath .. "/rcc -name \"" .. fcfg.basename .. "\" -no-compress \"" .. fcfg.relpath .. "\" -o \"" .. path.getrelative(fcfg.project.location, output) .. "\""
 
 	-- if we have custom commands, add them
 	if fcfg.config.qtrccargs then
@@ -481,14 +479,13 @@ function premake.extensions.qt.addMOCCustomBuildRule(fcfg, cfg)
 
 	-- create the output file name
 	local output = qt.getGeneratedDir(cfg) .. "/moc_" .. fcfg.basename .. ".cpp"
-	output = path.getrelative(projectloc, output)
 
 	-- create the moc command
-	local command = fcfg.config.qtbinpath .. "/moc \"" .. fcfg.relpath .. "\" -o \"" .. output .. "\""
+	local command = fcfg.config.qtbinpath .. "/moc \"" .. fcfg.relpath .. "\" -o \"" .. path.getrelative(projectloc, output) .. "\""
 
 	-- if we have a precompiled header, prepend it
 	if fcfg.config.pchheader then
-		command = command .. " \"-b" .. fcfg.config.pchheader .. "\""
+		command = command .. " -b \"" .. fcfg.config.pchheader .. "\""
 	end
 
 	-- append the defines to the command
