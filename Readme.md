@@ -26,7 +26,7 @@ Clone this repository some place where Premake will be able to find it. Then
 in your project's Premake script, include the main file like this :
 
 ```lua
-require( "premake-qt/qt" )
+require( "premake-qt/qt.lua" )
 
 -- this line is optional, but it avoids writting premake.extensions.qt to
 -- call the plugin's methods.
