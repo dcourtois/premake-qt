@@ -77,19 +77,22 @@ function premake.extensions.qt.getVersion(cfg, includepath)
 	if qtversion == nil then
 		-- pre-5.6 stored the version string in qglobal.h ; post-5.6 in qconfig.h
 		local qtheaderpaths = { includepath .. "/QtCore/qconfig.h", includepath .. "/QtCore/qglobal.h" }
-
 		for _, headerpath in ipairs(qtheaderpaths) do
+
+			-- scan the file if it exists
 			local file = io.open(headerpath)
+			if file ~= nil then
 
-			-- scan to find 'QT_VERSION_STR' and extract the version number
-			for line in file:lines() do
-				if line:find("QT_VERSION_STR") then
-					qtversion = line:sub(line:find("\"")+1, line:find("\"[^\"]*$")-1)
-					break
+				-- scan to find 'QT_VERSION_STR' and extract the version number
+				for line in file:lines() do
+					if line:find("QT_VERSION_STR") then
+						qtversion = line:sub(line:find("\"")+1, line:find("\"[^\"]*$")-1)
+						break
+					end
 				end
-			end
 
-			io.close(file)
+				io.close(file)
+			end
 
 			-- if we found the version, break out of the loop
 			if qtversion ~=nil then
@@ -475,28 +478,34 @@ function premake.extensions.qt.getQRCDependencies(fcfg)
 
 	local dependencies = {}
 	local file = io.open(fcfg.abspath)
-	local qrcdirectory = path.getdirectory(fcfg.abspath)
-	local projectdirectory = fcfg.project.location
 
-	-- parse the qrc file to find the files it will embed
-	for line in file:lines() do
+	-- ensure the file was correctly opened
+	if file ~= nil then
 
-		-- try to find the <file></file> entries
-		local match = string.match(line, "<file>(.+)</file>")
-		if match == nil then
-			match = string.match(line, "<file%s+[^>]*>(.+)</file>")
+		local qrcdirectory = path.getdirectory(fcfg.abspath)
+		local projectdirectory = fcfg.project.location
+
+		-- parse the qrc file to find the files it will embed
+		for line in file:lines() do
+
+			-- try to find the <file></file> entries
+			local match = string.match(line, "<file>(.+)</file>")
+			if match == nil then
+				match = string.match(line, "<file%s+[^>]*>(.+)</file>")
+			end
+
+			-- if we have one, compute the path of the file, and add it to the dependencies
+			-- note : the QRC files are relative to the folder containing the qrc file.
+			if match ~= nil then
+				table.insert(dependencies, path.getrelative(projectdirectory, qrcdirectory .. "/" .. match))
+			end
+
 		end
 
-		-- if we have one, compute the path of the file, and add it to the dependencies
-		-- note : the QRC files are relative to the folder containing the qrc file.
-		if match ~= nil then
-			table.insert(dependencies, path.getrelative(projectdirectory, qrcdirectory .. "/" .. match))
-		end
+		-- close the qrc file
+		io.close(file)
 
 	end
-
-	-- close the qrc file
-	io.close(file)
 
 	return dependencies
 
@@ -519,16 +528,18 @@ function premake.extensions.qt.needMOC(filename)
 
 		-- open the file
 		local file = io.open(filename)
+		if file ~= nil then
 
-		-- scan it to find 'Q_OBJECT' or 'Q_GADGET'
-		for line in file:lines() do
-			if line:find("^%s*Q_OBJECT%f[^%w_]") or line:find("^%s*Q_GADGET%f[^%w_]") then
-				needmoc = true
-				break
+			-- scan it to find 'Q_OBJECT' or 'Q_GADGET'
+			for line in file:lines() do
+				if line:find("^%s*Q_OBJECT%f[^%w_]") or line:find("^%s*Q_GADGET%f[^%w_]") then
+					needmoc = true
+					break
+				end
 			end
-		end
 
-		io.close(file)
+			io.close(file)
+		end
 	end
 
 	return needmoc
