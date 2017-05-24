@@ -54,7 +54,7 @@ Most of the API commands of this addon are scoped to the current configuration,
 so unless specified otherwise, assume that the documented command only applies
 to the current configuration block.
 
-#####qtpath "path"
+##### qtpath "path"
 
 Setup the path where Qt include and lib folders are found. If this is not used,
 the addon will try to get the path from the `QTDIR` or `QT_DIR` environment variable.
@@ -66,37 +66,37 @@ If your includes, libraries and binaries are in separate folders (for instance o
 Unix they might be in /usr/include, /usr/lib or whatever) you can use the
 `qtincludepath`, `qtlibpath` and `qtbinpath` API commands instead.
 
-#####qtincludepath "path"
+##### qtincludepath "path"
 
 Set the path for the Qt headers. If this is not used, the addon will set the
 includepath to the `include` child folder of the one set by `qtpath`, or one of the
 environment variable.
 
-#####qtlibpath "path"
+##### qtlibpath "path"
 
 Set the path for the Qt libraries. If this is not used, the addon will set the
 includepath to the `lib` child folder of the one set by `qtpath`, or one of the
 environment variable.
 
-#####qtbinpath "path"
+##### qtbinpath "path"
 
 Set the path for the Qt binaries. If this is not used, the addon will set the
 includepath to the `bin` child folder of the one set by `qtpath`, or one of the
 environment variable.
 
-#####qtprefix "prefix"
+##### qtprefix "prefix"
 
 Specify a prefix used by the libs. For instance, when using the default Qt5
 installation, for the widgets module, the lib is named `Qt5Widgets.lib`, so you
 must set `Qt5` as the prefix.
 
-#####qtsuffix "suffix"
+##### qtsuffix "suffix"
 
 This one is only used when linking against debug or custom versions of Qt. For
 instance, in debug, the libs are suffixed with a `d`. And when building your
 own version of Qt, you might want to suffix the x64 and x86 versions differently.
 
-#####qtmodules { "module", "module", ...}
+##### qtmodules { "module", "module", ...}
 
 Specify which module you want to use. The available modules are (for the moment)
 
@@ -120,22 +120,22 @@ Specify which module you want to use. The available modules are (for the moment)
 Using a module will add its include folder, and link the correct librar(y/ies)
 The list of module can be customized. See the Examples section for more information.
 
-#####qtgenerateddir "path"
+##### qtgenerateddir "path"
 
 The optional path where Qt generated file are created. If omitted, those files
 are generated in the objdir.
 
-#####qtmocargs { "arg", "arg", ... }
+##### qtmocargs { "arg", "arg", ... }
 
 An optional list of arguments that will be sent to the Qt moc tool. Each argument will be encased
 in double quotes, e.g. `qtmocargs { "foo", "bar" }` will appear as `"foo" "bar"` in the command line.
 
-#####qtuicargs { "arg", "arg", ... }
+##### qtuicargs { "arg", "arg", ... }
 
 An optional list of arguments that will be sent to the Qt uic tool. Each argument will be encased
 in double quotes, e.g. `qtuicargs { "foo", "bar" }` will appear as `"foo" "bar"` in the command line.
 
-#####qtrccargs { "arg", "arg", ... }
+##### qtrccargs { "arg", "arg", ... }
 
 An optional list of arguments that will be sent to the Qt rcc tool. Each argument will be encased
 in double quotes, e.g. `qtrccargs { "foo", "bar" }` will appear as `"foo" "bar"` in the command line.
