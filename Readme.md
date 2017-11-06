@@ -140,7 +140,7 @@ in double quotes, e.g. `qtuicargs { "foo", "bar" }` will appear as `"foo" "bar"`
 An optional list of arguments that will be sent to the Qt rcc tool. Each argument will be encased
 in double quotes, e.g. `qtrccargs { "foo", "bar" }` will appear as `"foo" "bar"` in the command line.
 
-##### qtcommandlinesizelimit integer
+##### qtcommandlinesizelimit ( integer )
 
 This option can be used to tell Qt tools to store their command line arguments
 into files, if the size of that command line exceed the given limit.
