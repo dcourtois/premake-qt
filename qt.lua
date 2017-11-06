@@ -30,10 +30,10 @@ include ( "qtmodules.lua" )
 --
 function premake.extensions.qt.enable()
 
- 	local qt = premake.extensions.qt
+	local qt = premake.extensions.qt
 
- 	-- enable Qt for the current config
- 	qtenabled ( true )
+	-- enable Qt for the current config
+	qtenabled ( true )
 
 	-- setup our overrides if not already done
 	if qt.enabled == false then
@@ -189,11 +189,11 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 	table.insert(config.includedirs, qtinclude)
 	table.insert(config.libdirs, qtlib)
 
+	-- linux link specific options
 	if _TARGET_OS == "linux" then
-		table.insert(config.linkoptions, "-Wl,-rpath," .. qtlib)
-		table.insert(config.linkoptions, "-Wl,-O1")
+		table.insert(config.linkoptions, "-Wl, -rpath, " .. qtlib)
 	end
-  
+
 	-- add the modules
 	for _, modulename in ipairs(config.qtmodules) do
 
@@ -271,10 +271,10 @@ function premake.extensions.qt.customBakeFiles(base, prj)
 		-- ignore this config if Qt is not enabled
 		if cfg.qtenabled == true then
 
-			local mocs	    = {}
-			local qrc	    = {}
+			local mocs		= {}
+			local qrc		= {}
 			local ui		= false
-			local objdir    = qt.getGeneratedDir(cfg)
+			local objdir	= qt.getGeneratedDir(cfg)
 
 			-- check each file in this configuration
 			table.foreachi(cfg.files, function(filename)
@@ -430,9 +430,9 @@ end
 -- Adds the custom build for ui files.
 --
 -- @param fcfg
---	  The config for a single file.
+--		The config for a single file.
 -- @param cfg
---    The config of the project ?
+--		The config of the project ?
 --
 function premake.extensions.qt.addQRCCustomBuildRule(fcfg, cfg)
 
@@ -549,9 +549,9 @@ end
 -- Adds the custom build for a moc'able file.
 --
 -- @param fcfg
---	  The config for a single file.
+--		The config for a single file.
 -- @param cfg
---    The config of the project ?
+--		The config of the project ?
 --
 function premake.extensions.qt.addMOCCustomBuildRule(fcfg, cfg)
 
@@ -564,38 +564,85 @@ function premake.extensions.qt.addMOCCustomBuildRule(fcfg, cfg)
 	local output = qt.getGeneratedDir(cfg) .. "/moc_" .. fcfg.basename .. ".cpp"
 
 	-- create the moc command
-	local command = fcfg.config.qtbinpath .. "/moc \"" .. fcfg.relpath .. "\" -o \"" .. path.getrelative(projectloc, output) .. "\""
+	local command = fcfg.config.qtbinpath .. "/moc \"" .. fcfg.relpath .. "\""
+	command = command .. " -o \"" .. path.getrelative(projectloc, output) .. "\""
 
 	-- if we have a precompiled header, prepend it
 	if fcfg.config.pchheader then
 		command = command .. " -b \"" .. fcfg.config.pchheader .. "\""
 	end
 
-	-- append the defines to the command
+	-- now create the arguments
+	local arguments = ""
+
+	-- append the defines to the arguments
 	if #fcfg.config.defines > 0 then
 		table.foreachi(fcfg.config.defines, function (define)
-			command = command .. " -D" .. define
+			arguments = arguments .. " -D" .. define
 		end)
 	end
 
-	-- append the include directories to the command
+	-- append the include directories to the arguments
 	if #fcfg.config.includedirs > 0 then
 		table.foreachi(fcfg.config.includedirs, function (include)
-			command = command .. " -I\"" .. path.getrelative(projectloc, include) .. "\""
+			arguments = arguments .. " -I\"" .. path.getrelative(projectloc, include) .. "\""
 		end)
 	end
 
 	-- if we have custom commands, add them
 	if fcfg.config.qtmocargs then
 		table.foreachi(fcfg.config.qtmocargs, function (arg)
-			command = command .. " \"" .. arg .. "\""
+			arguments = arguments .. " \"" .. arg .. "\""
 		end)
 	end
+
+	-- handle the command line size limit
+	command = qt.handleCommandLineSizeLimit(cfg, fcfg, command, arguments)
 
 	-- add the custom build rule
 	fcfg.buildmessage	= "Moc'ing " .. fcfg.name
 	fcfg.buildcommands	= { command }
 	fcfg.buildoutputs	= { output }
+
+end
+
+
+--
+-- Checks if the command line will exceed the given size limit, and will output
+-- the arguments to a file if so. The updated command is returned
+--
+-- @param cfg
+--		The configuration object.
+-- @param fcfg
+--		The file configuration object.
+-- @param command
+--		The command.
+-- @param arguments
+--		The arguments.
+-- @return
+--		The updated command.
+--
+function premake.extensions.qt.handleCommandLineSizeLimit(cfg, fcfg, command, arguments)
+	
+	-- check if we need to output to a file
+	local limit = fcfg.config.qtcommandlinesizelimit or iif(_TARGET_OS == "windows", 2047, nil)
+	if limit ~= nil and string.len(command) + string.len(arguments) + 1 > limit then
+		local qt = premake.extensions.qt
+
+		-- create the argument file name
+		local filename = qt.getGeneratedDir(cfg) .. "/moc_" .. fcfg.basename .. ".args"
+
+		-- output the arguments to it
+		local file = io.open(filename, "w")
+		file:write(arguments)
+		io.close(file)
+
+		-- update the command to load this file
+		return command .. " @\"" .. filename .. "\""
+	end
+
+	-- update the command to include the arguments
+	return command .. " " .. arguments
 
 end
 

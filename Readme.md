@@ -140,6 +140,20 @@ in double quotes, e.g. `qtuicargs { "foo", "bar" }` will appear as `"foo" "bar"`
 An optional list of arguments that will be sent to the Qt rcc tool. Each argument will be encased
 in double quotes, e.g. `qtrccargs { "foo", "bar" }` will appear as `"foo" "bar"` in the command line.
 
+##### qtcommandlinesizelimit integer
+
+This option can be used to tell Qt tools to store their command line arguments
+into files, if the size of that command line exceed the given limit.
+
+This is used to go around a limitation of Windows. On older Windows operating
+system, command lines can't exceed a fixed size (see
+[this Microsoft support page](https://support.microsoft.com/en-us/help/830473/command-prompt-cmd--exe-command-line-string-limitation))
+
+If this command is not used, the addon will use a limit of 2047 character on
+Windows only. If you're on more recent Windows, use this command to raise the limit. Also,
+if this command is used, it will apply the limit to the current configuration, so you can
+force this behavior on all operating systems if needed.
+
 
 Examples
 ========

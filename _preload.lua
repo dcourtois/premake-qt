@@ -123,6 +123,16 @@ premake.api.register {
 }
 
 --
+-- This command is used to tell Qt tools to store their command line arguments
+-- in a file if the size of the command line is greater than the limit
+--
+premake.api.register {
+	name = "qtcommandlinesizelimit",
+	scope = "config",
+	kind = "integer"
+}
+
+--
 -- Private use only : used by the addon to know if qt has already been enabled or not
 --
 premake.api.register {
