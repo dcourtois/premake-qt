@@ -50,6 +50,11 @@ premake.extensions.qt.modules = {
 		include = "QtQuick",
 		defines = { "QT_QUICK_LIB" }
 	},
+	quickcontrols2 = {
+		name = "QuickControls2",
+		include = "QtQuickControls2",
+		defines = { "QT_QUICKCONTROLS2_LIB" }
+	},
 	sensors = {
 		name = "Sensors",
 		include = "QtSensors",
