@@ -179,7 +179,7 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 		)
 	end
 
-	-- bake paths in the config (in case they were retrieved from the environment variable, thy
+	-- bake paths in the config (in case they were retrieved from the environment variable, they
 	-- will not be in the config objects, and we need them in the other baking methods)
 	config.qtincludepath	= qtinclude
 	config.qtlibpath		= qtlib
@@ -189,9 +189,21 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 	table.insert(config.includedirs, qtinclude)
 	table.insert(config.libdirs, qtlib)
 
-	-- linux link specific options
-	if _TARGET_OS == "linux" then
-		table.insert(config.linkoptions, "-Wl, -rpath, " .. qtlib)
+	-- platform specifics
+	if _TARGET_OS == "macosx" then
+
+		-- -F set where the frameworks are located, and it's needed for header and libs
+		table.insert(config.buildoptions, "-F" .. qtlib)
+		table.insert(config.linkoptions, "-F" .. qtlib)
+
+		-- for dynamic libs resolution
+		table.insert(config.linkoptions, "-Wl,-rpath," .. qtlib)
+
+	elseif _TARGET_OS == "linux" then
+
+		-- for dynamic libs resolution
+		table.insert(config.linkoptions, "-Wl,-rpath," .. qtlib)
+
 	end
 
 	-- add the modules
@@ -200,6 +212,7 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 		-- private modules are indicated by modulename-private
 		-- this will implicitly add the associated public module and the private module header path
 		if modulename:endswith("-private") then
+
 			-- we need the version for the private header path
 			config.qtversion = qt.getVersion(config, qtinclude)
 			if config.qtversion == nil then
@@ -213,14 +226,17 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 			-- truncate the "-private"
 			modulename = modulename:sub(1, -9)
 
+			-- add the private part of the module
 			local module = modules[modulename]
 			if module ~= nil then
-				local privatepath = qtinclude .. "/" .. module.include .. "/" .. config.qtversion
+				local privatepath = path.join(qt.getIncludeDir(config, module), config.qtversion)
 				table.insert(config.includedirs, privatepath)
-				table.insert(config.includedirs, privatepath .. "/" .. module.include)
+				table.insert(config.includedirs, path.join(privatepath , module.include))
 			end
+
 		end
 
+		-- add the public part of the module
 		if modules[modulename] ~= nil then
 
 			local module	= modules[modulename]
@@ -229,8 +245,12 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 			local libname	= prefix .. module.name .. suffix
 
 			-- configure the module
-			table.insert(config.includedirs, qtinclude .. "/" .. module.include)
-			table.insert(config.links, libname)
+			table.insert(config.includedirs, qt.getIncludeDir(config, module))
+			if _TARGET_OS == "macosx" then
+				table.insert(config.links, path.join(qtlib, module.include .. ".framework"))
+			else
+				table.insert(config.links, libname)
+			end
 			if module.defines ~= nil then
 				qt.mergeDefines(config, module.defines)
 			end
@@ -677,6 +697,26 @@ function premake.extensions.qt.mergeDefines(config, defines)
 		if contains(config.defines, define) == false then
 			table.insert(config.defines, define)
 		end
+	end
+
+end
+
+--
+-- Get the include dir for the given module.
+--
+-- @param config
+--		The current config.
+-- @param module
+--		The module.
+-- @return
+--		The include dir.
+--
+function premake.extensions.qt.getIncludeDir(config, module)
+
+	if _TARGET_OS == "macosx" then
+		return path.join(config.qtlibpath, module.include .. ".framework", "Headers")
+	else
+		return path.join(config.qtincludepath, module.include)
 	end
 
 end
