@@ -179,7 +179,7 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 		)
 	end
 
-	-- bake paths in the config (in case they were retrieved from the environment variable, thy
+	-- bake paths in the config (in case they were retrieved from the environment variable, they
 	-- will not be in the config objects, and we need them in the other baking methods)
 	config.qtincludepath	= qtinclude
 	config.qtlibpath		= qtlib
@@ -213,14 +213,16 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 			-- truncate the "-private"
 			modulename = modulename:sub(1, -9)
 
+			-- add the private part
 			local module = modules[modulename]
 			if module ~= nil then
-				local privatepath = qtinclude .. "/" .. module.include .. "/" .. config.qtversion
+				local privatepath = qt.getIncludeDir(config, module) .. "/" .. config.qtversion
 				table.insert(config.includedirs, privatepath)
 				table.insert(config.includedirs, privatepath .. "/" .. module.include)
 			end
 		end
 
+		-- add the public module
 		if modules[modulename] ~= nil then
 
 			local module	= modules[modulename]
@@ -229,7 +231,7 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 			local libname	= prefix .. module.name .. suffix
 
 			-- configure the module
-			table.insert(config.includedirs, qtinclude .. "/" .. module.include)
+			table.insert(config.includedirs, qt.getIncludeDir(config, module))
 			table.insert(config.links, libname)
 			if module.defines ~= nil then
 				qt.mergeDefines(config, module.defines)
@@ -677,6 +679,30 @@ function premake.extensions.qt.mergeDefines(config, defines)
 		if contains(config.defines, define) == false then
 			table.insert(config.defines, define)
 		end
+	end
+
+end
+
+--
+-- Get the include path corresponding to the given config and module.
+-- This is due to MacOS using a framework system with entirely different paths.s
+--
+-- @param config
+--		The configuration object.
+-- @param module
+--		The module.
+-- @return
+--		The include dir.
+--
+function premake.extensions.qt.getIncludeDir(config, module)
+
+	if config.system == "macosx" then
+		-- note : yes, I use include as the framework's name, but this is because include
+		-- already has the correct form, and I'm too lazy to refactor to correctly handles
+		-- frameworks :)
+		return config.qtincludepath .. "/../lib/" .. module.include .. ".framework/Headers"
+	else
+		return config.qtincludepath .. "/" .. module.include
 	end
 
 end
