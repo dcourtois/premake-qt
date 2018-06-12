@@ -418,7 +418,7 @@ function premake.extensions.qt.addUICustomBuildRule(fcfg, cfg)
 	local output = qt.getGeneratedDir(cfg) .. "/ui_" .. fcfg.basename .. ".h"
 
 	-- build the command
-	local command = fcfg.config.qtbinpath .. "/uic -o \"" .. path.getrelative(fcfg.project.location, output) .. "\" \"" .. fcfg.relpath.. "\""
+	local command = "\"" .. fcfg.config.qtbinpath .. "/uic\" -o \"" .. path.getrelative(fcfg.project.location, output) .. "\" \"" .. fcfg.relpath.. "\""
 
 	-- if we have custom commands, add them
 	if fcfg.config.qtrccargs then
@@ -462,7 +462,7 @@ function premake.extensions.qt.addQRCCustomBuildRule(fcfg, cfg)
 	local output = qt.getGeneratedDir(cfg) .. "/qrc_" .. fcfg.basename .. ".cpp"
 
 	-- build the command
-	local command = fcfg.config.qtbinpath .. "/rcc -name \"" .. fcfg.basename .. "\" -no-compress \"" .. fcfg.relpath .. "\" -o \"" .. path.getrelative(fcfg.project.location, output) .. "\""
+	local command = "\"" .. fcfg.config.qtbinpath .. "/rcc\" -name \"" .. fcfg.basename .. "\" -no-compress \"" .. fcfg.relpath .. "\" -o \"" .. path.getrelative(fcfg.project.location, output) .. "\""
 
 	-- if we have custom commands, add them
 	if fcfg.config.qtrccargs then
@@ -584,7 +584,7 @@ function premake.extensions.qt.addMOCCustomBuildRule(fcfg, cfg)
 	local output = qt.getGeneratedDir(cfg) .. "/moc_" .. fcfg.basename .. ".cpp"
 
 	-- create the moc command
-	local command = fcfg.config.qtbinpath .. "/moc \"" .. fcfg.relpath .. "\""
+	local command = "\"" .. fcfg.config.qtbinpath .. "/moc\" \"" .. fcfg.relpath .. "\""
 	command = command .. " -o \"" .. path.getrelative(projectloc, output) .. "\""
 
 	-- if we have a precompiled header, prepend it
