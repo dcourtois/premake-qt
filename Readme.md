@@ -96,6 +96,11 @@ This one is only used when linking against debug or custom versions of Qt. For
 instance, in debug, the libs are suffixed with a `d`. And when building your
 own version of Qt, you might want to suffix the x64 and x86 versions differently.
 
+##### qtmain true
+
+Windows only. If this is used, the `qtmain` library will be linked to the current
+project on the current config.
+
 ##### qtmodules { "module", "module", ...}
 
 Specify which module you want to use. The available modules are (for the moment)

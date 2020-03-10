@@ -189,6 +189,10 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 	table.insert(config.includedirs, qtinclude)
 	table.insert(config.libdirs, qtlib)
 
+	-- get the prefix and suffix
+	local prefix	= config.qtprefix or ""
+	local suffix	= config.qtsuffix or ""
+
 	-- platform specifics
 	if _TARGET_OS == "macosx" then
 
@@ -203,6 +207,13 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 
 		-- for dynamic libs resolution
 		table.insert(config.linkoptions, "-Wl,-rpath," .. qtlib)
+
+	elseif _TARGET_OS == "windows" then
+
+		-- handle the qtmain lib
+		if config.qtmain == true then
+			table.insert(config.links, "qtmain" .. suffix .. ".lib")
+		end
 
 	end
 
@@ -240,8 +251,6 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 		if modules[modulename] ~= nil then
 
 			local module	= modules[modulename]
-			local prefix	= config.qtprefix or ""
-			local suffix	= config.qtsuffix or ""
 			local libname	= prefix .. module.name .. suffix
 
 			-- configure the module
