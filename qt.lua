@@ -457,7 +457,7 @@ function premake.extensions.qt.isQRC(filename)
 end
 
 --
--- Adds the custom build for ui files.
+-- Adds the custom build for qrc files.
 --
 -- @param fcfg
 --		The config for a single file.
