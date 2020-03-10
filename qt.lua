@@ -430,7 +430,7 @@ function premake.extensions.qt.addUICustomBuildRule(fcfg, cfg)
 	local command = "\"" .. fcfg.config.qtbinpath .. "/uic\" -o \"" .. path.getrelative(fcfg.project.location, output) .. "\" \"" .. fcfg.relpath.. "\""
 
 	-- if we have custom commands, add them
-	if fcfg.config.qtrccargs then
+	if fcfg.config.qtuicargs then
 		table.foreachi(fcfg.config.qtuicargs, function (arg)
 			command = command .. " \"" .. arg .. "\""
 		end)
@@ -440,6 +440,7 @@ function premake.extensions.qt.addUICustomBuildRule(fcfg, cfg)
 	fcfg.buildmessage	= "Uic'ing " .. fcfg.name
 	fcfg.buildcommands	= { command }
 	fcfg.buildoutputs	= { output }
+	fcfg.buildinputs	= { fcfg.abspath }
 
 end
 
