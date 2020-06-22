@@ -11,7 +11,8 @@ premake.extensions.qt = true
 premake.api.register {
 	name = "qtpath",
 	scope = "config",
-	kind = "path"
+	kind = "path",
+	tokens = true
 }
 
 --
@@ -21,7 +22,8 @@ premake.api.register {
 premake.api.register {
 	name = "qtbinpath",
 	scope = "config",
-	kind = "path"
+	kind = "path",
+	tokens = true
 }
 
 --
@@ -31,7 +33,8 @@ premake.api.register {
 premake.api.register {
 	name = "qtincludepath",
 	scope = "config",
-	kind = "path"
+	kind = "path",
+	tokens = true
 }
 
 --
@@ -41,7 +44,8 @@ premake.api.register {
 premake.api.register {
 	name = "qtlibpath",
 	scope = "config",
-	kind = "path"
+	kind = "path",
+	tokens = true
 }
 
 --
@@ -89,7 +93,8 @@ premake.api.register {
 premake.api.register {
 	name = "qtgenerateddir",
 	scope = "config",
-	kind = "path"
+	kind = "path",
+	tokens = true
 }
 
 --
