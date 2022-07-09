@@ -1,3 +1,5 @@
+![Premake-qt msvc19 badge](https://github.com/dcourtois/premake-qt/workflows/windows-msvc/badge.svg)
+
 Qt Addon
 ========
 
