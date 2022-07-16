@@ -84,43 +84,43 @@ function run_ninja
 
 function run_vs2005
 {
-    msbuild.exe Project.sln && exec_windows
+    msbuild.exe Project.sln /property:Configuration=Release && exec_windows
     return $?
 }
 function run_vs2008
 {
-    msbuild.exe Project.sln && exec_windows
+    msbuild.exe Project.sln /property:Configuration=Release && exec_windows
     return $?
 }
 function run_vs2010
 {
-    msbuild.exe Project.sln && exec_windows
+    msbuild.exe Project.sln /property:Configuration=Release && exec_windows
     return $?
 }
 function run_vs2012
 {
-    msbuild.exe Project.sln && exec_windows
+    msbuild.exe Project.sln /property:Configuration=Release && exec_windows
     return $?
 }
 function run_vs2013
 {
-    msbuild.exe Project.sln && exec_windows
+    msbuild.exe Project.sln /property:Configuration=Release && exec_windows
     return $?
 }
 function run_vs2015
 {
-    msbuild.exe Project.sln && exec_windows
+    msbuild.exe Project.sln /property:Configuration=Release && exec_windows
     return $?
 }
 function run_vs2017
 {
-    msbuild.exe Project.sln && exec_windows
+    msbuild.exe Project.sln /property:Configuration=Release && exec_windows
     return $?
 }
 
 function run_vs2019
 {
-    msbuild.exe Project.sln && exec_windows
+    msbuild.exe Project.sln /property:Configuration=Release && exec_windows
     return $?
 }
 

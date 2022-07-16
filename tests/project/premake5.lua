@@ -14,7 +14,7 @@ local LocationDir = path.join(Root, "solution", _ACTION)
 local qt = premake.extensions.qt
 
 if _OPTIONS["qt-root"] ~= nil then
-  QtRoot = _OPTIONS["qt-root"]
+  QtRoot = path.normalize(_OPTIONS["qt-root"])
 end
 
 print("QtRoot:", QtRoot)
@@ -36,13 +36,14 @@ workspace "Project"
   end
   qtprefix "Qt6"
 
-  filter "configurations:*Debug"
+  filter "configurations:Debug"
+    targetsuffix "d"
     optimize "Off"
     symbols "On"
     defines "DEBUG"
     qtsuffix "d"
 
-  filter "configurations:*Release"
+  filter "configurations:Release"
     optimize "On"
     symbols "Off"
     defines "NDEBUG"
@@ -52,7 +53,7 @@ workspace "Project"
 
   filter "toolset:msc*"
     architecture ("x86_64") -- installed qt is for 64 bits
-    buildoptions {"/Zc:__cplusplus", "/permissive-" }-- required by Qt
+    buildoptions {"/Zc:__cplusplus", "/permissive-" } -- required by Qt6
 
   filter {}
 
@@ -60,7 +61,7 @@ workspace "Project"
   project "app"
     kind "ConsoleApp"
     targetname("app")
-    files {path.join(Root, "src", "**.cpp"), path.join(Root, "src", "**.h"), path.join(Root, "src", "**.ui")}
+    files {path.join(Root, "src", "**.cpp"), path.join(Root, "src", "**.h"), path.join(Root, "src", "**.ui"), path.join(Root, "data", "**.qrc")}
 
     includedirs(path.join(Root, "src"))
 

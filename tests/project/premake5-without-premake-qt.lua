@@ -13,7 +13,7 @@ end
 local LocationDir = path.join(Root, "solution", _ACTION)
 
 if _OPTIONS["qt-root"] ~= nil then
-  QtRoot = _OPTIONS["qt-root"]
+  QtRoot = path.normalize(_OPTIONS["qt-root"])
 end
 
 print("QtRoot:", QtRoot)
@@ -21,10 +21,21 @@ print("QtRoot:", QtRoot)
 rule "uic"
   display "uic"
   fileextension ".ui"
-  buildmessage 'uic -o ../../obj/%{file.basename} %{file.relpath}'
+  buildmessage 'uic -o obj/ui_%{file.basename}.h %{file.relpath}'
   --buildinputs { "%{file.relpath}" }
-  buildoutputs { path.join("obj", "ui_%{file.basename}.h") }
-  buildcommands { path.join(QtRoot, "bin", "uic") .. " -o " .. path.join("../../obj", "ui_%{file.basename}.h") .. " %{file.relpath}" }
+  buildoutputs { path.join(LocationDir, "obj", "ui_%{file.basename}.h") }
+  buildcommands { path.join(QtRoot, "bin", "uic") .. " -o " .. path.join("obj", "ui_%{file.basename}.h") .. " %{file.relpath}" }
+
+--[[
+rule "qrc"
+  display "qrc"
+  fileextension ".qrc"
+  buildmessage 'rcc -o obj/%{file.basename}.cpp %{file.relpath}'
+  --buildinputs { "%{file.relpath}" } -- extra dependencies: content of <file>..</file>
+  buildoutputs { path.join(LocationDir, "obj", "qrc_%{file.basename}.cpp") }
+  buildcommands { path.join(QtRoot, "bin", "rcc") .. " -name %{file.basename} -no-compress %{file.relpath} -o " .. path.join("obj", "qrc_%{file.basename}.cpp") }
+  -- compilebuildoutputs "on" -- unsupported
+--]]
 
 workspace "Project"
   location ( LocationDir )
@@ -41,11 +52,12 @@ workspace "Project"
     libdirs(path.join(QtRoot, "lib"))
   end
 
-  filter "configurations:*Debug"
+  filter "configurations:Debug"
+    targetsuffix "d"
     optimize "Off"
     symbols "On"
     defines "DEBUG"
-  filter "configurations:*Release"
+  filter "configurations:Release"
     optimize "On"
     symbols "Off"
     defines "NDEBUG"
@@ -55,7 +67,7 @@ workspace "Project"
 
   filter "toolset:msc*"
     architecture ("x86_64") -- installed qt is for 64 bits
-    buildoptions {"/Zc:__cplusplus", "/permissive-" }-- required by Qt
+    buildoptions {"/Zc:__cplusplus", "/permissive-" } -- required by Qt6
 
   filter {}
 
@@ -63,11 +75,12 @@ workspace "Project"
   project "app"
     kind "ConsoleApp"
     targetname("app")
-    files {path.join(Root, "src", "**.cpp"), path.join(Root, "src", "**.h"), path.join(Root, "src", "**.ui")}
+    files {path.join(Root, "src", "**.cpp"), path.join(Root, "src", "**.h"), path.join(Root, "src", "**.ui"), path.join(Root, "data", "**.qrc")}
 
     includedirs(path.join(Root, "src"))
 
-    includedirs("obj") -- for generated files from ui
+    includedirs(path.join(LocationDir, "obj")) -- for generated files from ui
+    --includedirs(path.join(QtRoot, "include"))
     includedirs(path.join(QtRoot, "include", "QtCore"))
     includedirs(path.join(QtRoot, "include", "QtGui"))
     includedirs(path.join(QtRoot, "include", "QtWidgets"))
@@ -75,9 +88,17 @@ workspace "Project"
     links{"Qt6Core", "Qt6Gui", "Qt6Widgets"}
 
     rules { "uic" }
+    -- rules { "qrc" } -- compilebuildoutputs isn't supported with rules
 
     filter "files:src/ui/EditorDialog.h"
       buildmessage "moc -o moc_%{file.basename}.cpp %{file.relpath}"
-      buildoutputs { path.join(WorkingDir, "obj", "moc_%{file.basename}.cpp") }
-      buildcommands { path.join(QtRoot, "bin", "moc") .. " -o " .. path.join("../../obj", "moc_%{file.basename}.cpp") .. " %{file.relpath}" }
+      buildoutputs { path.join(LocationDir, "obj", "moc_%{file.basename}.cpp") }
+      buildcommands { path.join(QtRoot, "bin", "moc") .. " -o " .. path.join(LocationDir, "obj", "moc_%{file.basename}.cpp") .. " %{file.relpath}" }
+      compilebuildoutputs "on"
+
+    filter "files:**.qrc"
+      buildmessage 'rcc -o obj/%{file.basename}.cpp %{file.relpath}'
+      --buildinputs { "%{file.relpath}" } -- extra dependencies: content of <file>..</file>
+      buildoutputs { path.join(LocationDir, "obj", "qrc_%{file.basename}.cpp") }
+      buildcommands { path.join(QtRoot, "bin", "rcc") .. " -name %{file.basename} -no-compress %{file.relpath} -o " .. path.join("obj", "qrc_%{file.basename}.cpp") }
       compilebuildoutputs "on"
