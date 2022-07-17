@@ -17,13 +17,20 @@ int main(int argc, char* argv[])
     {
         return -1;
     }
+    QApplication app(argc, argv);
+    EditorDialog dialog;
+
+    dialog.ui->label->setText("");
+    QObject::connect(&dialog, SIGNAL(test_signal()), &dialog, SLOT(hello_world()));
+    emit dialog.test_signal();
+    if (dialog.ui->label->text() != "hello world")
+    {
+        return -2;
+    }
     if (argc == 1)  // Do nothing in test mode
     {
         return 0;
     }
-    QApplication app(argc, argv);
-
-    EditorDialog dialog;
     dialog.show();
     return app.exec();
 }

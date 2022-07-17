@@ -3,22 +3,21 @@
 #include <QDialog>
 #include <memory>
 
-namespace Ui
-{
-class EditorDialog;
-}  // namespace Ui
-
+#include "ui_EditorDialog.h"
 class EditorDialog : public QDialog
 {
     Q_OBJECT
-   public:
-    explicit EditorDialog(QWidget* parent= nullptr);
-    ~EditorDialog();
+public:
+    explicit EditorDialog(QWidget* parent = nullptr);
+    ~EditorDialog() override;
 
-   public slots:
+signals:
+    void test_signal();
+
+public slots:
 
     void hello_world();
 
-   private:
+public:
     std::unique_ptr<Ui::EditorDialog> ui;
 };
