@@ -300,31 +300,26 @@ function premake.extensions.qt.customBakeFiles(base, prj)
 		-- ignore this config if Qt is not enabled
 		if cfg.qtenabled == true then
 
-			local mocs		= {}
+			local moc		= {}
 			local qrc		= {}
-			local ui		= false
+			local ui		= {}
 			local objdir	= qt.getGeneratedDir(cfg)
 
 			-- check each file in this configuration
 			table.foreachi(cfg.files, function(filename)
 
 				if qt.isUI(filename) then
-					ui = true
+					table.insert(ui, filename)
 				elseif qt.isQRC(filename) then
 					table.insert(qrc, filename)
 				elseif qt.needMOC(filename) then
-					table.insert(mocs, filename)
+					table.insert(moc, filename)
 				end
 
 			end)
 
-			-- include path for uic generated headers
-			if ui == true then
-				table.insert(cfg.includedirs, objdir)
-			end
-
 			-- the moc files
-			table.foreachi(mocs, function(filename)
+			table.foreachi(moc, function(filename)
 				table.insert(cfg.files, objdir .. "/moc_" .. path.getbasename(filename) .. ".cpp")
 			end)
 
@@ -332,6 +327,16 @@ function premake.extensions.qt.customBakeFiles(base, prj)
 			table.foreachi(qrc, function(filename)
 				table.insert(cfg.files, objdir .. "/qrc_" .. path.getbasename(filename) .. ".cpp")
 			end)
+
+			-- the ui files
+			table.foreachi(ui, function(filename)
+				table.insert(cfg.files, objdir .. "/ui_" .. path.getbasename(filename) .. ".h")
+			end)
+
+			-- include path for uic generated headers
+			if #ui > 0 then
+				table.insert(cfg.includedirs, objdir)
+			end
 
 		end
 	end
@@ -653,7 +658,7 @@ end
 --		The updated command.
 --
 function premake.extensions.qt.handleCommandLineSizeLimit(cfg, fcfg, command, arguments)
-	
+
 	-- check if we need to output to a file
 	local limit = fcfg.config.qtcommandlinesizelimit or iif(_TARGET_OS == "windows", 2047, nil)
 	if limit ~= nil and string.len(command) + string.len(arguments) + 1 > limit then
