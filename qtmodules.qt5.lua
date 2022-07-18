@@ -3,7 +3,7 @@
 -- The available modules' definitions.
 -- Use the keys with qtmodule. For instance `qtmodule { "core", "gui" }` to use QtCore and QtGui
 --
-premake.extensions.qt.modules = {
+premake.extensions.qt.modules.qt5 = {
 	core = {
 		name = "Core",
 		include = "QtCore",

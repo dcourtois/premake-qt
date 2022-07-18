@@ -16,21 +16,39 @@ premake.extensions.qt = {
 	-- these are private, do not touch
 	--
 	enabled = false,
-	defaultpath = os.getenv("QTDIR") or os.getenv("QT_DIR")
+	defaultpath = os.getenv("QTDIR") or os.getenv("QT_DIR"),
+	major_version = "5"
 }
 
---
 -- include list of modules
---
-include ( "qtmodules.lua" )
+-- note: ideally, I would just include the correct version in premake.extensions.qt.enable but for some
+--       reason when doing it, it fails with a "cannot open file..." although the working dir and filename
+--       are exactly the same as when done from here... so until I find out why, load both.
+premake.extensions.qt.modules = {}
+include ( "qtmodules.qt5.lua" )
+include ( "qtmodules.qt6.lua" )
 
 --
 -- Enable Qt for a project. Be carefull, although this is a method, it will enable Qt
 -- functionalities only in the current configuration.
 --
-function premake.extensions.qt.enable()
+-- @param major_version
+--		This is the major Qt version number used, passed as a string. If omitted, defaults to "5".
+--
+function premake.extensions.qt.enable(major_version)
 
 	local qt = premake.extensions.qt
+
+	-- store the major version if it was provided
+	if major_version ~= nil then
+		if qt.modules["qt" .. major_version] ~= nil then
+			qt.major_version = major_version
+		else
+			printf("No modules file found for version \"%s\". Fallback to module files for version \"5\"", major_version)
+		end
+	end
+
+	-- validate it
 
 	-- enable Qt for the current config
 	qtenabled ( true )
@@ -38,8 +56,8 @@ function premake.extensions.qt.enable()
 	-- setup our overrides if not already done
 	if qt.enabled == false then
 		qt.enabled = true
-		premake.override(premake.oven, "bakeFiles", qt.customBakeFiles)
-		premake.override(premake.oven, "bakeConfig", qt.customBakeConfig)
+		premake.override(premake.oven,       "bakeFiles",  qt.customBakeFiles)
+		premake.override(premake.oven,       "bakeConfig", qt.customBakeConfig)
 		premake.override(premake.fileconfig, "addconfig",  qt.customAddFileConfig)
 	end
 
@@ -158,7 +176,7 @@ end
 function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platform, extraFilters)
 
 	local qt = premake.extensions.qt
-	local modules = qt.modules
+	local modules = qt.modules["qt" .. qt.major_version]
 
 	-- bake
 	local config = base(wks, prj, buildcfg, platform, extraFilters)
@@ -190,7 +208,7 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 	table.insert(config.libdirs, qtlib)
 
 	-- get the prefix and suffix
-	local prefix	= config.qtprefix or ""
+	local prefix	= config.qtprefix or "Qt" .. qt.major_version
 	local suffix	= config.qtsuffix or ""
 
 	-- platform specifics
@@ -212,7 +230,12 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 
 		-- handle the qtmain lib
 		if config.qtmain == true then
-			table.insert(config.links, "qtmain" .. suffix .. ".lib")
+			if qt.major_version == "6" then
+				printf("\"qtmain\" function is deprecated in Qt6, please use the \"entrypoint\" module instead.")
+				table.insert(config.qtmodules, "entrypoint")
+			else
+				table.insert(config.links, "qtmain" .. suffix .. ".lib")
+			end
 		end
 
 	end
@@ -270,6 +293,8 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 					table.insert(config.links, additionallink)
 				end
 			end
+		else
+			printf("Unknown module \"%s\" used.", modulename)
 		end
 	end
 
