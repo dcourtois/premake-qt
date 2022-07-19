@@ -45,6 +45,6 @@ jobs:
       run: |
         echo $PATH
         cd tests
-        PATH=$PATH:`pwd` ./test_projects.sh premake5 vs2019 premake5.lua --qt-root=$Qt6_DIR
+        PATH=$PATH:`pwd` ./test_projects.sh premake5 --qt-root=$Qt6_DIR
         cd ..
       shell: bash
