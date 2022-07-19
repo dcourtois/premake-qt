@@ -43,8 +43,9 @@ jobs:
 
     - name: test premake-qt
       run: |
-        echo $PATH
         cd tests
-        PATH=$PATH:`pwd` ./test_projects.sh premake5 --qt-root=$Qt6_DIR
-        cd ..
+        ./premake5.exe --file=project/premake5.lua vs2019 --qt-root=$Qt6_DIR
+        cd project/solution/vs2019
+        msbuild.exe Project.sln /property:Configuration=Release
+        ./bin/app.exe
       shell: bash
