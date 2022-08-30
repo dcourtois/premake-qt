@@ -470,8 +470,6 @@ function premake.extensions.qt.addUICustomBuildRule(fcfg, cfg)
 	fcfg.buildmessage	= "Uic'ing " .. fcfg.name
 	fcfg.buildcommands	= { command }
 	fcfg.buildoutputs	= { output }
-	fcfg.buildinputs	= { fcfg.abspath }
-
 end
 
 --
