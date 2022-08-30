@@ -204,7 +204,7 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 	config.qtbinpath		= qtbin
 
 	-- add the includes and libraries directories
-	table.insert(config.includedirs, qtinclude)
+	table.insert(iif(config.qtuseexternalinclude, config.externalincludedirs, config.includedirs), qtinclude)
 	table.insert(config.libdirs, qtlib)
 
 	-- get the prefix and suffix
@@ -264,8 +264,10 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 			local module = modules[modulename]
 			if module ~= nil then
 				local privatepath = path.join(qt.getIncludeDir(config, module), config.qtversion)
-				table.insert(config.includedirs, privatepath)
-				table.insert(config.includedirs, path.join(privatepath , module.include))
+
+				includedirs = iif(config.qtuseexternalinclude, config.externalincludedirs, config.includedirs)
+				table.insert(includedirs, privatepath)
+				table.insert(includedirs, path.join(privatepath , module.include))
 			end
 
 		end
@@ -277,7 +279,8 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 			local libname	= prefix .. module.name .. suffix
 
 			-- configure the module
-			table.insert(config.includedirs, qt.getIncludeDir(config, module))
+			table.insert(iif(config.qtuseexternalinclude, config.externalincludedirs, config.includedirs), qt.getIncludeDir(config, module))
+
 			if _TARGET_OS == "macosx" then
 				table.insert(config.links, path.join(qtlib, module.include .. ".framework"))
 			else
