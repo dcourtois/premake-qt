@@ -72,7 +72,7 @@ Set the path for the Qt headers. If this is not used, the addon will set the
 includepath to the `include` child folder of the one set by `qtpath`, or one of the
 environment variable.
 
-##### qtuseexternalinclude (boolean)
+##### qtuseexternalinclude ( boolean )
 
 By default, Qt modules' include directories are added as regular include directories,
 meaning they might issue warnings.
