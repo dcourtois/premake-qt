@@ -72,6 +72,13 @@ Set the path for the Qt headers. If this is not used, the addon will set the
 includepath to the `include` child folder of the one set by `qtpath`, or one of the
 environment variable.
 
+##### qtuseexternalinclude (boolean)
+
+By default, Qt modules' include directories are added as regular include directories,
+meaning they might issue warnings.
+You can use this option so that the include directories are instead added as "external" ones
+so that compilers supporting this won't ever issue any warnings on those includes.
+
 ##### qtlibpath "path"
 
 Set the path for the Qt libraries. If this is not used, the addon will set the
@@ -198,6 +205,11 @@ solution "TestQt"
 		-- Enable Qt for this project.
 		--
 		qt.enable()
+
+		--
+		-- Include Qt module directories as external to avoid possible warnings.
+		--
+		qtuseexternalinclude ( true )
 
 		--
 		-- Setup the Qt path. This apply to the current configuration, so
