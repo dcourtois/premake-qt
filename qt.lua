@@ -633,30 +633,24 @@ end
 function premake.extensions.qt.addTSCustomBuildRule(fcfg, cfg)
 	local qt = premake.extensions.qt
 
-	-- get the project's location (to make paths relative to it)
-	local projectloc = fcfg.project.location
-
 	-- create the output file name
-	local qtqmgenerateddir = fcfg.qtqmgenerateddir or cfg.qtqmgenerateddir
-	local output = path.join(qtqmgenerateddir or cfg.targetdir, fcfg.basename .. ".qm")
+	local qtqmgenerateddir	= fcfg.qtqmgenerateddir or fcfg.config.qtqmgenerateddir
+	local outputdir			= qtqmgenerateddir or cfg.targetdir
+	local output			= path.join(outputdir, fcfg.basename .. ".qm")
 
-	-- create the moc command
-	local command = '"' .. fcfg.config.qtbinpath .. '/lrelease" "' .. fcfg.relpath .. '"'
-	command = command .. ' -qm "' .. path.getrelative(projectloc, output) .. '"'
+	-- create the command
+	local command = "\"" .. fcfg.config.qtbinpath .. "/lrelease\" \"" .. fcfg.relpath .. "\""
+	command = command .. " -qm \"" .. path.getrelative(fcfg.project.location, output) .. "\""
 
-	-- now create the arguments
-	local arguments = ""
-
-	-- if we have custom commands, add them
+	-- add additional args
 	table.foreachi(qt.combineArgs(cfg.qtlreleaseargs, fcfg.qtlreleaseargs), function (arg)
-		arguments = arguments .. ' "' .. arg .. '"'
+		command = command .. " \"" .. arg .. "\""
 	end)
-	command = command .. arguments
 
 	-- add the custom build rule
-	fcfg.buildmessage = "Running lrelease on " .. fcfg.name
-	fcfg.buildcommands = { command }
-	fcfg.buildoutputs = { output }
+	fcfg.buildmessage	= "Running lrelease on " .. fcfg.name
+	fcfg.buildcommands	= { command }
+	fcfg.buildoutputs	= { output }
 end
 
 
@@ -713,7 +707,7 @@ function premake.extensions.qt.addMOCCustomBuildRule(fcfg, cfg)
 	-- create the output file name
 	local output = qt.getGeneratedDir(cfg) .. "/moc_" .. fcfg.basename .. ".cpp"
 
-	-- create the moc command
+	-- create the command
 	local command = "\"" .. fcfg.config.qtbinpath .. "/moc\" \"" .. fcfg.relpath .. "\""
 	command = command .. " -o \"" .. path.getrelative(projectloc, output) .. "\""
 
