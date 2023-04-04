@@ -439,6 +439,10 @@ function premake.extensions.qt.customAddFileConfig(base, fcfg, cfg)
 	elseif qt.isQRC(config.abspath) then
 		qt.addQRCCustomBuildRule(config, cfg)
 
+	-- translation files
+	elseif qt.isTS(config.abspath) then
+		qt.addTSCustomBuildRule(config, cfg)
+
 	-- moc files
 	elseif qt.needMOC(config.abspath) then
 		qt.addMOCCustomBuildRule(config, cfg)
@@ -602,6 +606,57 @@ function premake.extensions.qt.getQRCDependencies(fcfg)
 
 	return dependencies
 
+end
+
+
+--
+-- Checks if a file is a ts file.
+--
+-- @param filename
+--		The file name to check.
+-- @return
+--		true if the file needs to be run through the lrelease tool, false if not.
+--
+function premake.extensions.qt.isTS(filename)
+	return path.hasextension(filename, { ".ts" })
+end
+
+
+--
+-- Adds the custom build for a ts file.
+--
+-- @param fcfg
+--		The config for a single file.
+-- @param cfg
+--		The config of the project ?
+--
+function premake.extensions.qt.addTSCustomBuildRule(fcfg, cfg)
+	local qt = premake.extensions.qt
+
+	-- get the project's location (to make paths relative to it)
+	local projectloc = fcfg.project.location
+
+	-- create the output file name
+	local qtqmgenerateddir = fcfg.qtqmgenerateddir or cfg.qtqmgenerateddir
+	local output = path.join(qtqmgenerateddir or cfg.targetdir, fcfg.basename .. ".qm")
+
+	-- create the moc command
+	local command = '"' .. fcfg.config.qtbinpath .. '/lrelease" "' .. fcfg.relpath .. '"'
+	command = command .. ' -qm "' .. path.getrelative(projectloc, output) .. '"'
+
+	-- now create the arguments
+	local arguments = ""
+
+	-- if we have custom commands, add them
+	table.foreachi(qt.combineArgs(cfg.qtlreleaseargs, fcfg.qtlreleaseargs), function (arg)
+		arguments = arguments .. ' "' .. arg .. '"'
+	end)
+	command = command .. arguments
+
+	-- add the custom build rule
+	fcfg.buildmessage = "Running lrelease on " .. fcfg.name
+	fcfg.buildcommands = { command }
+	fcfg.buildoutputs = { output }
 end
 
 

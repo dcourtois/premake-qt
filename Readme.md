@@ -152,6 +152,16 @@ in double quotes, e.g. `qtuicargs { "foo", "bar" }` will appear as `"foo" "bar"`
 An optional list of arguments that will be sent to the Qt rcc tool. Each argument will be encased
 in double quotes, e.g. `qtrccargs { "foo", "bar" }` will appear as `"foo" "bar"` in the command line.
 
+##### qtlreleaseargs { "arg", "arg", ... }
+
+An optional list of arguments that will be sent to the Qt lrelease tool. Each argument will be encased
+in double quotes, e.g. `qtlreleaseargs { "foo", "bar" }` will appear as `"foo" "bar"` in the command line.
+
+##### qtqmgenerateddir "path"
+
+The optional path, relative to the current script, where the qm files generated
+by Qt will be created. If omitted, the default behavior is to generate those files in the target directory.
+
 ##### qtcommandlinesizelimit ( integer )
 
 This option can be used to tell Qt tools to store their command line arguments
@@ -198,7 +208,7 @@ solution "TestQt"
 		--
 
 		-- add the files
-		files { "**.h", "**.cpp", "**.ui" "**.qrc" }
+		files { "**.h", "**.cpp", "**.ts", "**.ui", "**.qrc" }
 
 
 		--
