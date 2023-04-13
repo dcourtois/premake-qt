@@ -334,39 +334,8 @@ function premake.extensions.qt.customBakeFiles(base, prj)
 
 		-- ignore this config if Qt is not enabled
 		if cfg.qtenabled == true then
-
-			local moc		= {}
-			local qrc		= {}
-			local ui		= {}
 			local objdir	= qt.getGeneratedDir(cfg)
-
-			-- check each file in this configuration
-			table.foreachi(cfg.files, function(filename)
-
-				if qt.isUI(filename) then
-					table.insert(ui, filename)
-				elseif qt.isQRC(filename) then
-					table.insert(qrc, filename)
-				elseif qt.needMOC(filename) then
-					table.insert(moc, filename)
-				end
-
-			end)
-
-			-- the moc files
-			table.foreachi(moc, function(filename)
-				table.insert(cfg.files, objdir .. "/moc_" .. path.getbasename(filename) .. ".cpp")
-			end)
-
-			-- the qrc files
-			table.foreachi(qrc, function(filename)
-				table.insert(cfg.files, objdir .. "/qrc_" .. path.getbasename(filename) .. ".cpp")
-			end)
-
-			-- the ui files
-			table.foreachi(ui, function(filename)
-				table.insert(cfg.files, objdir .. "/ui_" .. path.getbasename(filename) .. ".h")
-			end)
+			local ui = table.filter(cfg.files, qt.isUI)
 
 			-- include path for uic generated headers
 			if #ui > 0 then
@@ -503,11 +472,10 @@ function premake.extensions.qt.addUICustomBuildRule(fcfg, cfg)
 	end)
 
 	-- add the custom build rule
-	fcfg.buildmessage	= "Running uic on " .. fcfg.name
-	fcfg.buildcommands	= { command }
-	fcfg.buildoutputs	= { output }
-	fcfg.buildinputs	= { fcfg.abspath }
-
+	premake.configset.store(fcfg._cfgset, premake.field.get("buildmessage"), "Running uic on %{file.name}")
+	premake.configset.store(fcfg._cfgset, premake.field.get("buildcommands"), { command })
+	premake.configset.store(fcfg._cfgset, premake.field.get("buildoutputs"), { output })
+	premake.configset.store(fcfg._cfgset, premake.field.get("buildinputs"), { fcfg.abspath })
 end
 
 
@@ -553,13 +521,13 @@ function premake.extensions.qt.addQRCCustomBuildRule(fcfg, cfg)
 	local inputs = qt.getQRCDependencies(fcfg)
 
 	-- add the custom build rule
-	fcfg.buildmessage	= "Running qrc on " .. fcfg.name
-	fcfg.buildcommands	= { command }
-	fcfg.buildoutputs	= { output }
+	premake.configset.store(fcfg._cfgset, premake.field.get("buildmessage"), "Running qrc on %{file.name}")
+	premake.configset.store(fcfg._cfgset, premake.field.get("buildcommands"), { command })
+	premake.configset.store(fcfg._cfgset, premake.field.get("buildoutputs"), { output })
+	premake.configset.store(fcfg._cfgset, premake.field.get("compilebuildoutputs"), true)
 	if #inputs > 0 then
-		fcfg.buildinputs = inputs
+		premake.configset.store(fcfg._cfgset, premake.field.get("buildinputs"), inputs)
 	end
-
 end
 
 
@@ -594,7 +562,7 @@ function premake.extensions.qt.getQRCDependencies(fcfg)
 			-- if we have one, compute the path of the file, and add it to the dependencies
 			-- note : the QRC files are relative to the folder containing the qrc file.
 			if match ~= nil then
-				table.insert(dependencies, path.getrelative(projectdirectory, qrcdirectory .. "/" .. match))
+				table.insert(dependencies, path.join(qrcdirectory, match))
 			end
 
 		end
@@ -648,9 +616,9 @@ function premake.extensions.qt.addTSCustomBuildRule(fcfg, cfg)
 	end)
 
 	-- add the custom build rule
-	fcfg.buildmessage	= "Running lrelease on " .. fcfg.name
-	fcfg.buildcommands	= { command }
-	fcfg.buildoutputs	= { output }
+	premake.configset.store(fcfg._cfgset, premake.field.get("buildmessage"), "Running lrelease on %{file.name}")
+	premake.configset.store(fcfg._cfgset, premake.field.get("buildcommands"), { command })
+	premake.configset.store(fcfg._cfgset, premake.field.get("buildoutputs"), { output })
 end
 
 
@@ -738,10 +706,10 @@ function premake.extensions.qt.addMOCCustomBuildRule(fcfg, cfg)
 	command = qt.handleCommandLineSizeLimit(cfg, fcfg, command, arguments)
 
 	-- add the custom build rule
-	fcfg.buildmessage	= "Running moc on " .. fcfg.name
-	fcfg.buildcommands	= { command }
-	fcfg.buildoutputs	= { output }
-
+	premake.configset.store(fcfg._cfgset, premake.field.get("buildmessage"), "Running moc on %{file.name}")
+	premake.configset.store(fcfg._cfgset, premake.field.get("buildcommands"), { command })
+	premake.configset.store(fcfg._cfgset, premake.field.get("buildoutputs"), { output })
+	premake.configset.store(fcfg._cfgset, premake.field.get("compilebuildoutputs"), true)
 end
 
 
