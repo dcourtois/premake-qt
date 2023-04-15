@@ -113,7 +113,8 @@ premake.api.register {
 	name = "qtgenerateddir",
 	scope = "config",
 	kind = "path",
-	tokens = true
+	tokens = true,
+	pathVars = true
 }
 
 --
@@ -143,7 +144,8 @@ premake.api.register {
 	name = "qtqmgenerateddir",
 	scope = "config",
 	kind = "path",
-	tokens = true
+	tokens = true,
+	pathVars = true
 }
 
 --
