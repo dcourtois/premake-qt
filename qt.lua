@@ -57,7 +57,6 @@ function premake.extensions.qt.enable(major_version)
 	-- setup our overrides if not already done
 	if qt.enabled == false then
 		qt.enabled = true
-		premake.override(premake.oven,       "bakeFiles",  qt.customBakeFiles)
 		premake.override(premake.oven,       "bakeConfig", qt.customBakeConfig)
 		premake.override(premake.fileconfig, "addconfig",  qt.customAddFileConfig)
 	end
@@ -74,8 +73,8 @@ function premake.extensions.qt.getPaths(cfg)
 
 	-- return the paths
 	return cfg.qtincludepath or (qtpath and qtpath .. "/include"),
-		   cfg.qtlibpath or (qtpath and qtpath .. "/lib"),
-		   cfg.qtbinpath or (qtpath and qtpath .. "/bin")
+		   cfg.qtlibpath     or (qtpath and qtpath .. "/lib"),
+		   cfg.qtbinpath     or (qtpath and qtpath .. "/bin")
 end
 
 
@@ -314,74 +313,6 @@ end
 
 
 --
--- Override the premake.oven.bakeFiles method to be able to add the Qt generated
--- files to the project.
---
--- @param base
---		The original bakeFiles method.
--- @param prj
---		The current project.
--- @return
---		The table of files.
---
-function premake.extensions.qt.customBakeFiles(base, prj)
-
-	local qt		= premake.extensions.qt
-	local project	= premake.project
-
-	-- parse the configurations for the project
-	for cfg in project.eachconfig(prj) do
-
-		-- ignore this config if Qt is not enabled
-		if cfg.qtenabled == true then
-
-			local moc		= {}
-			local qrc		= {}
-			local ui		= {}
-			local objdir	= qt.getGeneratedDir(cfg)
-
-			-- check each file in this configuration
-			table.foreachi(cfg.files, function(filename)
-
-				if qt.isUI(filename) then
-					table.insert(ui, filename)
-				elseif qt.isQRC(filename) then
-					table.insert(qrc, filename)
-				elseif qt.needMOC(filename) then
-					table.insert(moc, filename)
-				end
-
-			end)
-
-			-- the moc files
-			table.foreachi(moc, function(filename)
-				table.insert(cfg.files, objdir .. "/moc_" .. path.getbasename(filename) .. ".cpp")
-			end)
-
-			-- the qrc files
-			table.foreachi(qrc, function(filename)
-				table.insert(cfg.files, objdir .. "/qrc_" .. path.getbasename(filename) .. ".cpp")
-			end)
-
-			-- the ui files
-			table.foreachi(ui, function(filename)
-				table.insert(cfg.files, objdir .. "/ui_" .. path.getbasename(filename) .. ".h")
-			end)
-
-			-- include path for uic generated headers
-			if #ui > 0 then
-				table.insert(cfg.includedirs, objdir)
-			end
-
-		end
-	end
-
-	return base(prj)
-
-end
-
-
---
 -- Helper function used to merge args coming from file configs and from the project config.
 --
 -- @param ...
@@ -399,6 +330,45 @@ function premake.extensions.qt.combineArgs(...)
 		end
 	end
 	return result
+end
+
+
+--
+-- Helper function that is used to add a custom command.
+--
+-- @note
+--		This should not be needed. Using the file config's buildmessage, buildcommands, etc.
+--		should work. But for some reason, when doing it like this, gmake2 doesn't get the
+--		custom commands, even though the other generators do (at least VS ones and gmake)
+--		Since this workaround uses an internal Premake-core field, this helper is used to
+--		make future updates easier.
+--
+-- @param fcfg
+--		The file config object on which we want to add the custom command.
+-- @param options
+--		Custom command options. This should be a table, with the following fields:
+--		- message (string)			 : The build message. Mandatory.
+--		- commands (table of strings): The build commands. Mandatory.
+--		- outputs (table of strings) : The output files. Mandatory.
+--		- inputs (table of string)	 : List of files on this this command depends. Optional.
+--		- compile (boolean)			 : If true, the outputs of this command will be compiled. Optional (false by default).
+--
+function premake.extensions.qt.addCustomCommand(fcfg, options)
+	local configset = premake.configset
+	local field		= premake.field
+
+	-- mandatory stuff
+	configset.store(fcfg._cfgset, field.get("buildmessage"),  options.message)
+	configset.store(fcfg._cfgset, field.get("buildcommands"), options.commands)
+	configset.store(fcfg._cfgset, field.get("buildoutputs"),  options.outputs)
+
+	-- optional ones
+	if options["inputs"] ~= nil and #options["inputs"] > 0 then
+		configset.store(fcfg._cfgset, field.get("buildinputs"), options["inputs"])
+	end
+	if options["compile"] == true then
+		configset.store(fcfg._cfgset, field.get("compilebuildoutputs"), true)
+	end
 end
 
 
@@ -434,6 +404,12 @@ function premake.extensions.qt.customAddFileConfig(base, fcfg, cfg)
 	-- ui files
 	if qt.isUI(config.abspath) then
 		qt.addUICustomBuildRule(config, cfg)
+
+		-- add directory in which the UI headers are generated to the config, if not already.
+		local includedir = qt.getGeneratedDir(cfg)
+		if table.contains(cfg.includedirs, includedir) == false then
+			table.insert(cfg.includedirs, includedir)
+		end
 
 	-- resource files
 	elseif qt.isQRC(config.abspath) then
@@ -503,11 +479,12 @@ function premake.extensions.qt.addUICustomBuildRule(fcfg, cfg)
 	end)
 
 	-- add the custom build rule
-	fcfg.buildmessage	= "Running uic on " .. fcfg.name
-	fcfg.buildcommands	= { command }
-	fcfg.buildoutputs	= { output }
-	fcfg.buildinputs	= { fcfg.abspath }
-
+	qt.addCustomCommand(fcfg, {
+		message	 = "Running uic on %{file.name}",
+		commands = { command },
+		outputs	 = { output },
+		inputs	 = { fcfg.abspath }
+	})
 end
 
 
@@ -553,13 +530,13 @@ function premake.extensions.qt.addQRCCustomBuildRule(fcfg, cfg)
 	local inputs = qt.getQRCDependencies(fcfg)
 
 	-- add the custom build rule
-	fcfg.buildmessage	= "Running qrc on " .. fcfg.name
-	fcfg.buildcommands	= { command }
-	fcfg.buildoutputs	= { output }
-	if #inputs > 0 then
-		fcfg.buildinputs = inputs
-	end
-
+	qt.addCustomCommand(fcfg, {
+		message	 = "Running qrc on %{file.name}",
+		commands = { command },
+		outputs	 = { output },
+		inputs	 = inputs,
+		compile	 = true
+	})
 end
 
 
@@ -572,19 +549,15 @@ end
 --		The list of project relative file names of the dependencies
 --
 function premake.extensions.qt.getQRCDependencies(fcfg)
-
 	local dependencies = {}
 	local file = io.open(fcfg.abspath)
 
 	-- ensure the file was correctly opened
 	if file ~= nil then
-
 		local qrcdirectory = path.getdirectory(fcfg.abspath)
-		local projectdirectory = fcfg.project.location
 
 		-- parse the qrc file to find the files it will embed
 		for line in file:lines() do
-
 			-- try to find the <file></file> entries
 			local match = string.match(line, "<file>(.+)</file>")
 			if match == nil then
@@ -592,20 +565,17 @@ function premake.extensions.qt.getQRCDependencies(fcfg)
 			end
 
 			-- if we have one, compute the path of the file, and add it to the dependencies
-			-- note : the QRC files are relative to the folder containing the qrc file.
+			-- NOTE: the QRC files are relative to the folder containing the qrc file.
 			if match ~= nil then
-				table.insert(dependencies, path.getrelative(projectdirectory, qrcdirectory .. "/" .. match))
+				table.insert(dependencies, path.join(qrcdirectory, match))
 			end
-
 		end
 
 		-- close the qrc file
 		io.close(file)
-
 	end
 
 	return dependencies
-
 end
 
 
@@ -648,9 +618,11 @@ function premake.extensions.qt.addTSCustomBuildRule(fcfg, cfg)
 	end)
 
 	-- add the custom build rule
-	fcfg.buildmessage	= "Running lrelease on " .. fcfg.name
-	fcfg.buildcommands	= { command }
-	fcfg.buildoutputs	= { output }
+	qt.addCustomCommand(fcfg, {
+		message	 = "Running lrelease on %{file.name}",
+		commands = { command },
+		outputs	 = { output }
+	})
 end
 
 
@@ -738,10 +710,12 @@ function premake.extensions.qt.addMOCCustomBuildRule(fcfg, cfg)
 	command = qt.handleCommandLineSizeLimit(cfg, fcfg, command, arguments)
 
 	-- add the custom build rule
-	fcfg.buildmessage	= "Running moc on " .. fcfg.name
-	fcfg.buildcommands	= { command }
-	fcfg.buildoutputs	= { output }
-
+	qt.addCustomCommand(fcfg, {
+		message	 = "Running moc on %{file.name}",
+		commands = { command },
+		outputs	 = { output },
+		compile	 = true
+	})
 end
 
 
