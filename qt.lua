@@ -57,8 +57,8 @@ function premake.extensions.qt.enable(major_version)
 	-- setup our overrides if not already done
 	if qt.enabled == false then
 		qt.enabled = true
-		premake.override(premake.oven,       "bakeConfig", qt.customBakeConfig)
-		premake.override(premake.fileconfig, "addconfig",  qt.customAddFileConfig)
+		premake.override(premake.oven, "bakeConfig", qt.customBakeConfig)
+		premake.override(premake.oven, "addGeneratedFiles", qt.customAddGeneratedFiles)
 	end
 
 end
@@ -134,27 +134,7 @@ end
 --		The input configuration
 --
 function premake.extensions.qt.getGeneratedDir(cfg)
-
-	-- check if the user specified a qtgenerateddir
-	if cfg.qtgenerateddir ~= nil then
-		return cfg.qtgenerateddir
-	end
-
-	-- try the objdir, if it's already baked
-	if cfg.objdir ~= nil then
-		return cfg.objdir
-	end
-
-	-- last resort, revert to the default obj path used by premake.
-	-- note : this is a bit hacky, but there is no easy "getobjdir(cfg)" method in
-	-- premake, thus this piece of code
-	dir = path.join(cfg.project.location, "obj")
-	if cfg.platform then
-		dir = path.join(dir, cfg.platform)
-	end
-	dir = path.join(dir, cfg.buildcfg)
-	return path.getabsolute(dir)
-
+	return cfg.qtgenerateddir or cfg.objdir
 end
 
 
@@ -373,20 +353,35 @@ end
 
 
 --
--- Override the base premake.fileconfig.addconfig method in order to add our
+-- Override the base premake.oven.addGeneratedFiles method in order to add our
 -- custom build rules for special Qt files.
 --
 -- @param base
 --		The base method that we must call.
--- @param fcfg
+-- @param wks
+--		the workspaces
+--
+function premake.extensions.qt.customAddGeneratedFiles(base, wks)
+	for prj in premake.workspace.eachproject(wks) do
+		local files = table.shallowcopy(prj._.files)
+		for cfg in premake.project.eachconfig(prj) do
+			table.foreachi(files, function(node)
+				premake.extensions.qt.customAddFileConfig(node, cfg)
+			end)
+		end
+	end
+	base(wks)
+end
+
+--
+-- Add our custom build rules for special Qt files
+--
+-- @param node
 --		The file configuration object.
 -- @param cfg
 --		The current configuration that we're adding to the file configuration.
 --
-function premake.extensions.qt.customAddFileConfig(base, fcfg, cfg)
-
-	-- call the base method to add the file config
-	base(fcfg, cfg)
+function premake.extensions.qt.customAddFileConfig(node, cfg)
 
 	-- do nothing else if Qt is not enabled
 	if cfg.qtenabled ~= true then
@@ -394,7 +389,7 @@ function premake.extensions.qt.customAddFileConfig(base, fcfg, cfg)
 	end
 
 	-- get the current config
-	local config = premake.fileconfig.getconfig(fcfg, cfg)
+	local config = premake.fileconfig.getconfig(node, cfg)
 
 	-- now filter the files, and depending on their type, add our
 	-- custom build rules
