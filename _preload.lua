@@ -98,11 +98,13 @@ premake.api.register {
 -- Specify the modules to use (will handle include paths, links, etc.)
 -- See premake.extensions.qt.modules for a list of available modules.
 --
+if not rawget(_G, "qtmodules") then
 premake.api.register {
 	name = "qtmodules",
 	scope = "config",
 	kind = "string-list"
 }
+end
 
 --
 -- Specify the path, relative to the current script, where the files generated
