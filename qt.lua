@@ -286,19 +286,22 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 			local includedirs = iif(config.qtuseexternalinclude, config.externalincludedirs, config.includedirs)
 			table.insert(includedirs, qt.getIncludeDir(config, module))
 
-			if _TARGET_OS == "macosx" then
-				table.insert(config.links, path.join(qtlib, module.include .. ".framework"))
-			else
-				table.insert(config.links, libname)
-			end
 			if module.defines ~= nil then
 				qt.mergeDefines(config, module.defines)
 			end
 
-			-- add additional links
-			if module.links ~= nil then
-				for _, additionallink in ipairs(module.links) do
-					table.insert(config.links, additionallink)
+			if config.kind ~= "StaticLib" then
+				if _TARGET_OS == "macosx" then
+					table.insert(config.links, path.join(qtlib, module.include .. ".framework"))
+				else
+					table.insert(config.links, libname)
+				end
+
+				-- add additional links
+				if module.links ~= nil then
+					for _, additionallink in ipairs(module.links) do
+						table.insert(config.links, additionallink)
+					end
 				end
 			end
 		else
