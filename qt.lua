@@ -65,16 +65,17 @@ end
 
 
 --
--- Get the include, lib and bin paths
+-- Get the include, lib, bin and libexec paths
 --
 function premake.extensions.qt.getPaths(cfg)
 	-- get the main path
 	local qtpath = cfg.qtpath or premake.extensions.qt.defaultpath
 
 	-- return the paths
-	return cfg.qtincludepath or (qtpath and qtpath .. "/include"),
-		   cfg.qtlibpath     or (qtpath and qtpath .. "/lib"),
-		   cfg.qtbinpath     or (qtpath and qtpath .. "/bin")
+	return cfg.qtincludepath	or (qtpath and qtpath .. "/include"),
+		   cfg.qtlibpath		or (qtpath and qtpath .. "/lib"),
+		   cfg.qtbinpath		or (qtpath and qtpath .. "/bin"),
+		   cfg.qtlibexecpath	or (qtpath and qtpath .. "/libexec")
 end
 
 
@@ -191,13 +192,13 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 	end
 
 	-- get the needed pathes
-	local qtinclude, qtlib, qtbin = qt.getPaths(config)
-	if qtinclude == nil or qtlib == nil or qtbin == nil then
+	local qtinclude, qtlib, qtbin, qtlibexec = qt.getPaths(config)
+	if qtinclude == nil or qtlib == nil or qtbin == nil or qtlibexec == nil then
 		error(
 			"Some Qt paths were not found. Ensure that you set the Qt path using\n" ..
 			"either 'qtpath' in your project configuration or using the QTDIR or\n" ..
 			"QT_DIR environment variable. You can also use the 'qtincludepath',\n" ..
-			"'qtlibpath' and 'qtbinpath' individually."
+			"'qtlibpath', 'qtbinpath' and 'qtlibexecpath' individually."
 		)
 	end
 
@@ -206,6 +207,7 @@ function premake.extensions.qt.customBakeConfig(base, wks, prj, buildcfg, platfo
 	config.qtincludepath	= qtinclude
 	config.qtlibpath		= qtlib
 	config.qtbinpath		= qtbin
+	config.qtlibexecpath	= qtlibexec
 
 	-- add the includes and libraries directories
 	local includedirs = iif(config.qtuseexternalinclude, config.externalincludedirs, config.includedirs)
@@ -333,6 +335,33 @@ function premake.extensions.qt.combineArgs(...)
 		end
 	end
 	return result
+end
+
+
+--
+-- Helper used to retrieve a tool, handling the mess of Qt versions and where to find them...
+--
+-- @param name
+--		Name of the tool.
+-- @param fcfg
+--	  The config for a single file.
+-- @param cfg
+--    The config of the project ?
+-- @return
+--		The full path to the tool.
+--
+function premake.extensions.qt.getTool(name, fcfg, cfg)
+	-- For some reasons, lrelease remained in bin, and on Windows, libexec isn't used...
+	if name == "lrelease" or cfg.system == premake.WINDOWS then
+		return path.join(fcfg.config.qtbinpath, name)
+	end
+
+	-- For the other tools on non-Windows platform, check the version...
+	if premake.checkVersion(qtversion, "<6.1") then
+		return path.join(fcfg.config.qtbinpath, name)
+	else
+		return path.join(fcfg.config.qtlibexecpath, name)
+	end
 end
 
 
@@ -474,7 +503,7 @@ function premake.extensions.qt.addUICustomBuildRule(fcfg, cfg)
 	local output = qt.getGeneratedDir(cfg) .. "/ui_" .. fcfg.basename .. ".h"
 
 	-- build the command
-	local command = "\"" .. fcfg.config.qtbinpath .. "/uic\" -o \"" .. path.getrelative(fcfg.project.location, output) .. "\" \"" .. fcfg.relpath.. "\""
+	local command = "\"" .. qt.getTool("uic", fcfg, cfg) .. "\" -o \"" .. path.getrelative(fcfg.project.location, output) .. "\" \"" .. fcfg.relpath.. "\""
 
 	-- if we have custom commands, add them
 	table.foreachi(qt.combineArgs(fcfg.config.qtuicargs, fcfg.qtuicargs), function (arg)
@@ -520,7 +549,7 @@ function premake.extensions.qt.addQRCCustomBuildRule(fcfg, cfg)
 	local output = qt.getGeneratedDir(cfg) .. "/qrc_" .. fcfg.basename .. ".cpp"
 
 	-- build the command
-	local command = "\"" .. fcfg.config.qtbinpath .. "/rcc\" -name \"" .. fcfg.basename .. "\" -no-compress \"" .. fcfg.relpath .. "\" -o \"" .. path.getrelative(fcfg.project.location, output) .. "\""
+	local command = "\"" .. qt.getTool("rcc", fcfg, cfg) .. "\" -name \"" .. fcfg.basename .. "\" -no-compress \"" .. fcfg.relpath .. "\" -o \"" .. path.getrelative(fcfg.project.location, output) .. "\""
 
 	-- if we have custom commands, add them
 	table.foreachi(qt.combineArgs(fcfg.config.qtrccargs, fcfg.qtrccargs), function (arg)
@@ -534,7 +563,7 @@ function premake.extensions.qt.addQRCCustomBuildRule(fcfg, cfg)
 
 	-- add the custom build rule
 	qt.addCustomCommand(fcfg, {
-		message	 = "Running qrc on %{file.name}",
+		message	 = "Running rcc on %{file.name}",
 		commands = { command },
 		outputs	 = { output },
 		inputs	 = inputs,
@@ -612,7 +641,7 @@ function premake.extensions.qt.addTSCustomBuildRule(fcfg, cfg)
 	local output			= path.join(outputdir, fcfg.basename .. ".qm")
 
 	-- create the command
-	local command = "\"" .. fcfg.config.qtbinpath .. "/lrelease\" \"" .. fcfg.relpath .. "\""
+	local command = "\"" .. qt.getTool("lrelease", fcfg, cfg) .. "\" \"" .. fcfg.relpath .. "\""
 	command = command .. " -qm \"" .. path.getrelative(fcfg.project.location, output) .. "\""
 
 	-- add additional args
@@ -683,7 +712,7 @@ function premake.extensions.qt.addMOCCustomBuildRule(fcfg, cfg)
 	local output = qt.getGeneratedDir(cfg) .. "/moc_" .. fcfg.basename .. ".cpp"
 
 	-- create the command
-	local command = "\"" .. fcfg.config.qtbinpath .. "/moc\" \"" .. fcfg.relpath .. "\""
+	local command = "\"" .. qt.getTool("moc", fcfg, cfg) .. "\" \"" .. fcfg.relpath .. "\""
 	command = command .. " -o \"" .. path.getrelative(projectloc, output) .. "\""
 
 	-- if we have a precompiled header, prepend it

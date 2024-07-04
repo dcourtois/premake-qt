@@ -27,11 +27,22 @@ premake.api.register {
 }
 
 --
--- Set the binary path. By default, its `qtpath .. "/bin"`. Use
--- this command to override it.
+-- Set the binary path. By default, its `qtpath .. "/bin"`. This is used to locate Qt tools.
+-- Use this command to override it.
 --
 premake.api.register {
 	name = "qtbinpath",
+	scope = "config",
+	kind = "path",
+	tokens = true
+}
+
+--
+-- Set the binary path. By default, its `qtpath .. "/libexec"`. This is used to locate Qt tools.
+-- Use this command to override it.
+--
+premake.api.register {
+	name = "qtlibexecpath",
 	scope = "config",
 	kind = "path",
 	tokens = true
