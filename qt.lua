@@ -357,7 +357,7 @@ function premake.extensions.qt.getTool(name, fcfg, cfg)
 	end
 
 	-- For the other tools on non-Windows platform, check the version...
-	if premake.checkVersion(qtversion, "<6.1") then
+	if premake.checkVersion(cfg.qtversion, "<6.1") then
 		return path.join(fcfg.config.qtbinpath, name)
 	else
 		return path.join(fcfg.config.qtlibexecpath, name)
